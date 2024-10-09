@@ -17,6 +17,7 @@ class UnauthorizedError extends ErrorResponse {
         super(message, 401);
     }
 }
+
 class NotFoundError extends ErrorResponse {
     constructor(message: string) {
         super(message, 404);

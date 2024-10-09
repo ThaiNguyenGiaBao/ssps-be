@@ -17,11 +17,13 @@ class AccessService {
         //const query = 'SELECT * FROM '
 
         // Check if the user already exists
-        const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+        const userResult = await db.query("SELECT * FROdsasM users WHERE email = $1", [email]);
 
         if (userResult.rows.length > 0) {
             throw new BadRequestError("User already exists");
         }
+
+        
 
         const avatarUrl = "https://avatar.iran.liara.run/username?username=" + username;
 
@@ -39,13 +41,7 @@ class AccessService {
 
         console.log("New user", newUser);
         return {
-            user: {
-                id: newUser.id,
-                email: newUser.email,
-                username: newUser.username,
-                avatarUrl: newUser.avatarurl,
-                isAdmin: newUser.isadmin
-            }
+            user: newUser
         };
     }
 

@@ -13,7 +13,7 @@ class AccessController {
 
     static async SignIn(req: Request, res: Response) {
         console.log("AccessController::SignIn", req.body);
-        const { accessToken, data } = await AccessService.SignIn(req.body);
+        const { accessToken, ...data } = await AccessService.SignIn(req.body);
         res.cookie("token", accessToken, { httpOnly: true, secure: false, sameSite: "lax" });
         return new OK({
             message: "User signed in successfully",
