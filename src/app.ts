@@ -3,8 +3,13 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import router from "./router/index";
+import swaggerUi from "swagger-ui-express";
+import yaml from "yamljs";
+import path from "path";
 
 const app = express();
+
+
 
 // init middleware
 app.use(morgan("dev"));
@@ -16,6 +21,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // init router
 app.use("/", router);
+
+
+// swagger
+const swaggerDocument = yaml.load(path.join(__dirname, "../swagger.yml"));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // handle errors
 app.use((req: Request, res: Response, next: NextFunction) => {

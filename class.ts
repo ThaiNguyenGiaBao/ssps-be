@@ -15,7 +15,6 @@ class User {
 }
 
 class Student extends User {
-    file: DocumentFile;
     printingHistory: PrintingHistory; // Printing action
     pageBalance: number;
 
@@ -67,15 +66,8 @@ class Printer {
         return 1;
     }
 
-    printFile(student: Student, file: DocumentFile) {
-        // print file
-        const price = this.calculatePrice(file);
-        if (student.pageBalance < price) {
-            console.log("Not enough balance");
-            return;
-        }
-
-        // ...
+    printFile( file: DocumentFile) {
+        
     }
 }
 
@@ -125,7 +117,7 @@ class PrintingHistory {
 }
 
 class _Event {
-    date: Date;
+    time: Date;
     type: string;
     description: string;
 }
