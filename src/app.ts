@@ -27,6 +27,7 @@ app.use("/", router);
 const swaggerDocument = yaml.load(path.join(__dirname, "../swagger.yml"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+
 // handle errors
 app.use((req: Request, res: Response, next: NextFunction) => {
     const error = new Error("Not found") as Error & { status: number };
