@@ -2,7 +2,6 @@ import { BadRequestError, ForbiddenError, NotFoundError } from "../helper/errorR
 
 class PrintingService{
     static printFile() {
-        // logic
         return {
             data: "File data"
         }
