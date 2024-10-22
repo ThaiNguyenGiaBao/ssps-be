@@ -1,4 +1,4 @@
-import PrintingService from "../services/printing.service";
+import PrintingService from "../services/printer.service";
 import { Request, Response } from "express";
 import { OK, Created } from "../helper/successResponse";
 

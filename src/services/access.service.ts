@@ -17,7 +17,7 @@ class AccessService {
         //const query = 'SELECT * FROM '
 
         // Check if the user already exists
-        const userResult = await db.query("SELECT * FROdsasM users WHERE email = $1", [email]);
+        const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
 
         if (userResult.rows.length > 0) {
             throw new BadRequestError("User already exists");
@@ -39,6 +39,7 @@ class AccessService {
 
         const newUser = newUserResult.rows[0];
 
+        
         console.log("New user", newUser);
         return {
             user: newUser
