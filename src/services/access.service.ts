@@ -39,6 +39,7 @@ class AccessService {
 
         const newUser = newUserResult.rows[0];
 
+        
         console.log("New user", newUser);
         return {
             user: newUser
