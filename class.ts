@@ -1,7 +1,7 @@
 class PrintingSystem {
     printerList: Printer[];
     studentList: Student[];
-    printingHistoryList: PrintingHistory[];
+    printingLogList: PrintingLog[];
     defaultNumPage: number;
     dateGivePage: Date;
     permitedFile: FileType[];
@@ -15,10 +15,10 @@ class User {
 }
 
 class Student extends User {
-    printingHistory: PrintingHistory; // Printing action
+    printingLog: PrintingLog; // Printing action
     pageBalance: number;
 
-    getPrintingHistory(startDate: Date, endDate: Date) {}
+    getPrintingLog(startDate: Date, endDate: Date) {}
 }
 
 class SPSO extends User {
@@ -34,9 +34,9 @@ class SPSO extends User {
     setDefaultDateGivePage(date: Date) {}
     setPermitedFile(fileType: FileType[]) {}
 
-    getPrintingHistoryForStudent(studentId: number, startTime: Date, endTime: Date) {}
-    getPrintingHistoryForPrinter(printerId: number, startTime: Date, endTime: Date) {}
-    getAllPrintingHistory() {}
+    getPrintingLogForStudent(studentId: number, startTime: Date, endTime: Date) {}
+    getPrintingLogForPrinter(printerId: number, startTime: Date, endTime: Date) {}
+    getAllPrintingLog() {}
 
     generateReport(type: string) {}
 }
@@ -96,15 +96,15 @@ class DocumentFile {
     numCopy: number;
 }
 
-class PrintingHistory {
+class PrintingLog {
     studentId: number;
     printerId: number;
     fileList: DocumentFile[];
     printingStartTime: Date;
     printingEndTime: Date;
 
-    getPrintingHistory() {
-        console.log("Printing history for student", this.studentId);
+    getPrintingLog() {
+        console.log("Printing Log for student", this.studentId);
         console.log("Printer ID", this.printerId);
         console.log("File list");
         this.fileList.forEach((file) => {
