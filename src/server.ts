@@ -1,6 +1,6 @@
-import app from "./src/app";
+import app from "./app";
 
-import configEnv from "./src/configs/configEnv";
+import configEnv from "./configs/configEnv";
 const port = configEnv.app.port;
 
 const env = process.env.NODE_ENV || "dev";

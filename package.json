@@ -4,10 +4,11 @@
     "description": "",
     "main": "server.js",
     "scripts": {
-        "start": "nodemon server.ts",
+        "start": "nodemon src/server.ts",
         "format": "prettier '**/*.{ts,js,json}' --write",
         "lint": "eslint 'src/**/*.ts'",
-        "build": "tsc"
+        "build": "tsc",
+        "product": "node dist/server.js"
     },
     "keywords": [],
     "author": "",

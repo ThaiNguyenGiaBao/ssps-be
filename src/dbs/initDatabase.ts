@@ -13,9 +13,17 @@ const db = new Pool({
         rejectUnauthorized: false // required for SSL connections
     },
     max: 20,
-    idleTimeoutMillis: 0,
-    connectionTimeoutMillis: 0,
+    idleTimeoutMillis: 300000,
 });
+
+setInterval(async () => {
+    try {
+        await db.query('SELECT 1');
+        console.log('Connection is alive');
+    } catch (err) {
+        console.error('Error keeping connection alive:', err);
+    }
+}, 100000);
 
 // Connect to the PostgreSQL database
 db.connect()
