@@ -6,9 +6,10 @@ import router from "./router/index";
 import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
 import path from "path";
+import cors from "cors";
+
 
 const app = express();
-
 
 
 // init middleware
@@ -17,6 +18,7 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 
 // init router

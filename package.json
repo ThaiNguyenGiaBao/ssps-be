@@ -6,7 +6,8 @@
     "scripts": {
         "start": "nodemon server.ts",
         "format": "prettier '**/*.{ts,js,json}' --write",
-        "lint": "eslint 'src/**/*.ts'"
+        "lint": "eslint 'src/**/*.ts'",
+        "build": "tsc"
     },
     "keywords": [],
     "author": "",

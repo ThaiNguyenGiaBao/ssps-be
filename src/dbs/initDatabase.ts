@@ -13,7 +13,8 @@ const db = new Pool({
         rejectUnauthorized: false // required for SSL connections
     },
     max: 20,
-    idleTimeoutMillis: 300000
+    idleTimeoutMillis: 0,
+    connectionTimeoutMillis: 0,
 });
 
 // Connect to the PostgreSQL database
