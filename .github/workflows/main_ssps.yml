@@ -21,11 +21,10 @@ jobs:
               run: |
                   npm install
                   npm run build
-
             
             - name: Deploy to Self-Hosted Server
               run: |
                 npm install -g pm2
-                pm2 start dist/server.js --name SSPS_Server --env production 
+                pm2 start dist/server.js --name SSPS_Server  
 
             
