@@ -7,7 +7,7 @@ declare global {
         interface Request {
             user: {
                 id: string;
-                isAdmin: boolean;
+                role: string;
             };
         }
     }
@@ -24,8 +24,8 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
             throw new UnauthorizedError("Unauthorized");
         }
 
-        req.user = member as { id: string; isAdmin: boolean };
-        console.log("User::", req.user);
+        req.user = member as { id: string; role: string };
+        console.log("User authenticated::", req.user);
         next();
     });
 };

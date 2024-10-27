@@ -7,10 +7,9 @@ import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
 import path from "path";
 import cors from "cors";
-
+import cookieParser from "cookie-parser";
 
 const app = express();
-
 
 // init middleware
 app.use(morgan("dev"));
@@ -19,16 +18,14 @@ app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
+app.use(cookieParser());
 
 // init router
 app.use("/", router);
 
-
 // swagger
 const swaggerDocument = yaml.load(path.join(__dirname, "../swagger.yml"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 
 // handle errors
 app.use((req: Request, res: Response, next: NextFunction) => {

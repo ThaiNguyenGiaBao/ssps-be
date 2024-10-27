@@ -8,17 +8,14 @@ dotenv.config();
 class AccessService {
     static async SignUp({ email, username, password }: { email: string; username: string; password: string }) {
         if (!email || !username || !password) {
-            throw new BadRequestError("Email and username are required");
+            throw new BadRequestError("Email, username, password are required");
         }
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
         if (!usernameRegex.test(username)) {
             throw new BadRequestError("Username must be alphanumeric and not contains space");
         }
-        //const query = 'SELECT * FROM '
 
         // Check if the user already exists
-
-        // const userResult = await findUserByEmail(email);
         const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
 
         if (userResult.rows.length > 0) {
@@ -34,15 +31,18 @@ class AccessService {
 
         // Create a new user
         const newUserResult = await db.query(
-            `INSERT INTO users (email, username, password, isAdmin, avatarUrl) 
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [email, username, hashedPassword, false, avatarUrl]
+            `INSERT INTO users (email, name, password, avatarUrl) 
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [email, username, hashedPassword, avatarUrl]
         );
 
         const newUser = newUserResult.rows[0];
 
         
         console.log("New user", newUser);
+        
+        // Remove the password from the response
+        delete newUser.password;
         return {
             user: newUser
         };
@@ -61,7 +61,7 @@ class AccessService {
         }
 
         if (await bcrypt.compare(password, user.password)) {
-            const accessToken = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET || "secret");
+            const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || "secret");
             const { password, ...userWithoutPassword } = user;
             return {
                 ...userWithoutPassword,
