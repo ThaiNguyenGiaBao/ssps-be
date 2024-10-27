@@ -17,6 +17,8 @@ class AccessService {
         //const query = 'SELECT * FROM '
 
         // Check if the user already exists
+
+        // const userResult = await findUserByEmail(email);
         const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
 
         if (userResult.rows.length > 0) {
