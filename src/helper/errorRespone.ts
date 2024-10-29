@@ -18,6 +18,7 @@ class UnauthorizedError extends ErrorResponse {
     }
 }
 
+
 class PaymentRequired extends ErrorResponse {
     constructor(message: string) {
         super(message, 402);
