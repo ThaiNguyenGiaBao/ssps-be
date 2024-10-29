@@ -36,7 +36,7 @@ class PrintingJobService {
     }
 
     static async CalculateNumUserPrint(startTime: string, endTime: string) {
-        let allPrintjob = await PrintJobModel.getPrintJobByUserAndPrinter("none", "none", startTime, endTime, ["sucess", "unpaid", "fail", "waiting"]);
+        let allPrintjob = await PrintJobModel.getPrintJobByUserAndPrinter("none", "none", startTime, endTime, ["success", "unpaid", "fail", "waiting"]);
         let user = new Set();
         for(let i in allPrintjob) user.add(allPrintjob[i].userid);
         return user.size;
