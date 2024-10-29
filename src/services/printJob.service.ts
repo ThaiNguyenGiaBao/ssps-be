@@ -5,20 +5,51 @@ import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 
 class PrintingJobService {
     static async getPrintJob(printJobId: string) {
+        if(printJobId == null) throw new BadRequestError("printJobId is null");
         return await PrintJobModel.getPrintJob(printJobId);
     }
 
     static async updateStatus({printJobId, newStatus}: {printJobId: string, newStatus: string}) {
+        if(printJobId == null) throw new BadRequestError("printJobId is null");
+
+        let acceptStatus = new Set(["created", "waiting", "success", "fail", "unpaid"]);
+        if(!acceptStatus.has(newStatus)) throw new BadRequestError("Status is not valid");
+
         await PrintJobModel.updateStatus(printJobId, newStatus);
     }
 
     static async getPrintingHistoryByUserAndPrinter({userId, printerId, startDate, endDate}: {userId: string, printerId: string, startDate: string, endDate: string}) {
-        return await PrintJobModel.getPrintJobByUserAndPrinter({
-            userId:     userId, 
-            printerId:  printerId, 
-            startDate:  startDate, 
-            endDate:    endDate
-        })
+        if(userId == null) throw new BadRequestError("userId is null");
+        if(printerId == null) throw new BadRequestError("printerId is null");
+
+        if(userId != "none" && printerId != "none") {
+            return await PrintJobModel.getPrintJobByUserAndPrinter({
+                userId:     userId, 
+                printerId:  printerId, 
+                startDate:  startDate, 
+                endDate:    endDate
+            });
+        }
+        else if(userId != "none") {
+            return await PrintJobModel.getPrintJobByUser({
+                userId:     userId, 
+                startDate:  startDate, 
+                endDate:    endDate
+            });
+        }
+        else if(printerId != "none") {
+            return await PrintJobModel.getPrintJobByPrinter({
+                printerId:  printerId, 
+                startDate:  startDate, 
+                endDate:    endDate
+            });
+        }
+        else {
+            return await PrintJobModel.getPrintJobByDuration({
+                startDate:  startDate, 
+                endDate:    endDate
+            });
+        }
     }
 
     static async savePrintJob({printerid, userid, fileid, papersize, numpage, numside, numcopy, pagepersheet, colortype, orientation, status}:
@@ -35,6 +66,12 @@ class PrintingJobService {
             orientation: string,
             status: string
         }) {
+
+        if (printerid == null || printerid == null || fileid == null ||
+            papersize == null || numpage <= 0 || numpage == null || (numside!=1 && numside!=2) ||
+            numcopy <= 0 || numcopy == null || pagepersheet <= 0 || pagepersheet == null ||
+            colortype == null || orientation == null || status == null
+        ) throw new BadRequestError("Invalid parameter for saving printJob");
 
         const File = await db.query("SELECT * FROM file WHERE id = $1", [fileid]);
         if(File.rows.length == 0) {
@@ -63,6 +100,12 @@ class PrintingJobService {
     static async CalculatePrice( {papersize, colortype, numpage, numside, pagepersheet, numcopy}:
                                  {papersize: string, colortype: string, numpage: number,
                                  numside: number, pagepersheet: number, numcopy: number}) {
+        
+        if (papersize == null || numpage <= 0 || numpage == null || (numside!=1 && numside!=2) ||
+            numcopy <= 0 || numcopy == null || pagepersheet <= 0 || pagepersheet == null ||
+            colortype == null
+        ) throw new BadRequestError("Invalid parameter for saving CalculatePrice");
+        
         let base_coin = 1;
         if(papersize == 'A4') base_coin = 2;
         if(papersize == 'A3') base_coin = 4;
@@ -78,9 +121,10 @@ class PrintingJobService {
     static async CalculateTotalPage({userId, paperSize, startDate, endDate} : 
                                   {userId: string, paperSize: string, startDate: string, endDate: string}) {
 
-        let allPrintjob = await PrintJobModel.getPrintJobByUserAndPrinter({
+        if (paperSize == null || userId == null) throw new BadRequestError("Invalid parameter for saving CalculatePrice");
+
+        let allPrintjob = await PrintJobModel.getPrintJobByUser({
             userId: userId, 
-            printerId: "none", 
             startDate: startDate, 
             endDate: endDate
         });
@@ -97,9 +141,7 @@ class PrintingJobService {
     }
 
     static async CalculateTotalUser({startDate, endDate}: {startDate: string, endDate: string}) {
-        let allPrintjob = await PrintJobModel.getPrintJobByUserAndPrinter({
-            userId: "none",
-            printerId: "none",
+        let allPrintjob = await PrintJobModel.getPrintJobByDuration({
             startDate: startDate,
             endDate: endDate
         });
