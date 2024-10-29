@@ -143,21 +143,15 @@ class PrintJobController {
         }).send(res);
     }
 
-    // Route /user/:userId/printer/:printerId : Get history of printer and user
-    static async getPrintingHistoryByUserAndPrinter(req: Request, res: Response) {
-
-        if(req.user.role == "user" && req.params.userId != req.user.id) {
-            throw new ForbiddenError("Permission denied on getting history of other user");
+    static async getPrintJob(req: Request, res: Response) {
+        let printJob = await PrintJobService.getPrintJob(req.params.printjobId)
+        if(req.user.role == 'user' && req.user.id != printJob.userid) {
+            throw new ForbiddenError("Permission denied on getting other user's printJob");
         }
 
         return new OK({
-            message: "All history printjob of printer and user",
-            data: await PrintJobService.getPrintingHistoryByUserAndPrinter({
-                userId:     req.params.userId,
-                printerId:  req.params.printerId,
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
-            })
+            message: "PrintJob",
+            data: printJob
         }).send(res);
     }
 
