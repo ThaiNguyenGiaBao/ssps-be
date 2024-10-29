@@ -25,7 +25,7 @@ const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, 
             throw new errorRespone_1.UnauthorizedError("Unauthorized");
         }
         req.user = member;
-        console.log("User::", req.user);
+        console.log("User authenticated::", req.user);
         next();
     }));
 });

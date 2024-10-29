@@ -24,35 +24,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const errorRespone_1 = require("../helper/errorRespone");
-const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const user_model_1 = __importDefault(require("../model/user.model"));
 dotenv_1.default.config();
 class AccessService {
     static SignUp(_a) {
         return __awaiter(this, arguments, void 0, function* ({ email, username, password }) {
             if (!email || !username || !password) {
-                throw new errorRespone_1.BadRequestError("Email and username are required");
+                throw new errorRespone_1.BadRequestError("Email, username, password are required");
             }
             const usernameRegex = /^[a-zA-Z0-9_]+$/;
             if (!usernameRegex.test(username)) {
                 throw new errorRespone_1.BadRequestError("Username must be alphanumeric and not contains space");
             }
-            //const query = 'SELECT * FROM '
             // Check if the user already exists
-            const userResult = yield initDatabase_1.default.query("SELECT * FROM users WHERE email = $1", [email]);
-            if (userResult.rows.length > 0) {
-                throw new errorRespone_1.BadRequestError("User already exists");
+            //const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+            const userResult = yield user_model_1.default.findUserByEmail(email);
+            if (userResult) {
+                throw new errorRespone_1.ForbiddenError("User already exists");
             }
             const avatarUrl = "https://avatar.iran.liara.run/username?username=" + username;
             // hash the password
             const hashedPassword = yield bcrypt_1.default.hash(password, 10);
             // Create a new user
-            const newUserResult = yield initDatabase_1.default.query(`INSERT INTO users (email, username, password, isAdmin, avatarUrl) 
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`, [email, username, hashedPassword, false, avatarUrl]);
-            const newUser = newUserResult.rows[0];
+            const newUser = yield user_model_1.default.createUser({
+                email,
+                username,
+                hashedPassword,
+                avatarUrl
+            });
             console.log("New user", newUser);
+            // Remove the password from the response
+            delete newUser.password;
             return {
                 user: newUser
             };
@@ -63,13 +68,12 @@ class AccessService {
             if (!email || !password) {
                 throw new errorRespone_1.BadRequestError("Email and password are required");
             }
-            const userResult = yield initDatabase_1.default.query("SELECT * FROM users WHERE email = $1", [email]);
-            const user = userResult.rows[0];
+            const user = yield user_model_1.default.findUserByEmail(email);
             if (!user) {
                 throw new errorRespone_1.NotFoundError("User not found");
             }
             if (yield bcrypt_1.default.compare(password, user.password)) {
-                const accessToken = jsonwebtoken_1.default.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET || "secret");
+                const accessToken = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || "secret");
                 const { password } = user, userWithoutPassword = __rest(user, ["password"]);
                 return Object.assign(Object.assign({}, userWithoutPassword), { accessToken });
             }

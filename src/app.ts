@@ -8,7 +8,6 @@ import yaml from "yamljs";
 import path from "path";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import storage from "./configs/firebase";
 
 const app = express();
 

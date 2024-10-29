@@ -5,90 +5,104 @@ import UserService from "../services/user.service";
 import { Request, Response } from "express";
 import { OK, Created } from "../helper/successResponse";
 import { BadRequestError, ForbiddenError, PaymentRequired } from "../helper/errorRespone";
+import PrintingService from "../services/printer.service";
+
+// Controller vs Service
+
+// CreatePrintJob (save config to db, calc price,  return {printJob, price})
+
+// StartPrintJob (send req to printer (fake API), update status, return {printJob})
 
 class PrintingController {
-    static async ShowFile(req: Request, res: Response) {
-        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+    // Controller must to return { message: string, data: any }
+    // Anything else must write in service
 
-        let fileInformation = await PrintJobModel.getAllFile(req.user.id);
-        return new OK({
-            message: "All files of user",
-            data: fileInformation
-        }).send(res);
-    }
-
+    // Create print job (store in db), calculate price, return print job and price
     static async CreatePrintJob(req: Request) {
-        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
 
         req.body.status = "created";
         req.body.userid = req.user.id;
-        
-        let printJob = await PrintJobModel.savePrintJob(JSON.stringify(req.body))
-        return printJob;
+
+        let printJob = await PrintJobModel.savePrintJob(JSON.stringify(req.body));
+        return new Created({
+            message: "Print job created",
+            data: printJob
+        });
     }
 
+    // Print file (call Fake API), update print job status, return message
     static async Print(req: Request, res: Response) {
-        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
-        if(!(await PrintJobModel.checkFileBelongToUser(req.user.id, req.body.fileid))) {
+        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
+        if (!(await PrintJobModel.checkFileBelongToUser(req.user.id, req.body.fileid))) {
             throw new BadRequestError("User doesn't have this file!");
         }
-        
-        const printJob = await PrintingController.CreatePrintJob(req);
+
+        //const printJob = await PrintingService.CreatePrintJob({});
         const price = await PrintJobService.CalculatePrice(JSON.stringify(req.body));
 
         return new OK({
             message: "Ready for printing!",
             data: {
-                "printJob": printJob,
-                "price": price
+                //printJob: printJob,
+                price: price
             }
         }).send(res);
     }
 
     static async StartPrintJob(req: Request, res: Response) {
-        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
 
         let printJob = await PrintJobModel.getPrintJob(req.body.printJobId);
 
-        if(printJob.status == "success") {
+        if (printJob.status == "success") {
             printJob = await PrintJobModel.clonePrintJob(req.body.printJobId);
             req.body.printJobId = printJob.id;
         }
 
+
+        // Send request to printer
         // NOT DONE TASK: CHECK PERMITTED FILE HERE //
 
         let userBalance = await UserService.getUserBalance(req.user.id);
         let price = await PrintJobService.CalculatePrice(JSON.stringify(printJob));
-        if(price > userBalance) {
-            await PrintJobModel.updateStatus(req.body.printJobId ,"unpaid");
+        if (price > userBalance) {
+            await PrintJobModel.updateStatus(req.body.printJobId, "unpaid");
             throw new PaymentRequired("User does not have enough coin!");
         }
 
         await UserService.updateUserBalance(req.user.id, userBalance - price);
-        await PrintJobModel.updateStatus(req.body.printJobId ,"waiting");
+        await PrintJobModel.updateStatus(req.body.printJobId, "waiting");
 
         // send printing request and done task
-        PrinterService.printFile(req.body.printJobId);
+        //PrinterService.printFile(req.body.printJobId);
 
-        return new OK({ 
+        return new OK({
             message: "Accept printing request",
-            data: "OK"
+            data: "OK" // Return PringJob
         }).send(res);
     }
 
+    // Should separate to two function: getPrintJobByUserId and getPrintJobByPrinterId; add function getAllPrintJobs
     static async getPrintingHistory(req: Request, res: Response) {
         let userid = req.body.userId;
-        if(req.user.role == 'user') userid = req.user.id;
+        if (req.user.role == "user") userid = req.user.id;
 
         return new OK({
             message: "All history printjob",
-            data: await PrintJobModel.getPrintJobByUserAndPrinter(userid, req.body.printerId, req.body.startDate, req.body.endDate, req.body.status)
+            data: await PrintJobModel.getPrintJobByUserAndPrinter(
+                userid,
+                req.body.printerId,
+                req.body.startDate,
+                req.body.endDate,
+                req.body.status
+            )
         }).send(res);
     }
 
     static async getNumberOfPage(req: Request, res: Response) {
         let userid = req.body.userId;
-        if(req.user.role == 'user') userid = req.user.id;
+        if (req.user.role == "user") userid = req.user.id;
 
         return new OK({
             message: "Total page",
@@ -97,7 +111,7 @@ class PrintingController {
     }
 
     static async getNumberOfUserPrint(req: Request, res: Response) {
-        if(req.body.role == 'user') throw new ForbiddenError("Only accept admin");
+        if (req.body.role == "user") throw new ForbiddenError("Only accept admin");
 
         return new OK({
             message: "Total user use printing service",
@@ -105,6 +119,5 @@ class PrintingController {
         }).send(res);
     }
 }
-
 
 export default PrintingController;
