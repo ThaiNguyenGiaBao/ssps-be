@@ -13,3 +13,4 @@ router.post("/upload", upload.single("file"), asyncHandler(FileController.upload
 router.delete("/delete", asyncHandler(FileController.deleteFile));
 
 export default router;
+
