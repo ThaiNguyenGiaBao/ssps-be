@@ -22,6 +22,11 @@ class PrintingJobService {
         if(userId == null) throw new BadRequestError("userId is null");
         if(printerId == null) throw new BadRequestError("printerId is null");
 
+        let checkStartDate = isNaN(Date.parse(startDate));
+        let checkEndDate = isNaN(Date.parse(endDate));
+
+        if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+
         if(userId != "none" && printerId != "none") {
             return await PrintJobModel.getPrintJobByUserAndPrinter({
                 userId:     userId, 
@@ -73,12 +78,14 @@ class PrintingJobService {
             colortype == null || orientation == null || status == null
         ) throw new BadRequestError("Invalid parameter for saving printJob");
 
-        const File = await db.query("SELECT * FROM file WHERE id = $1", [fileid]);
+        const File = await db.query("SELECT * FROM file WHERE id::text = $1", [fileid]);
         if(File.rows.length == 0) {
             throw new NotFoundError("File is not exist");
         }
 
-        const DeleteExistPrintJob = await db.query("DELETE FROM printingjob WHERE fileid = $1 AND status = 'created'", [fileid]);
+        // TO-DO check if printer is not exist -> wait for printer service
+
+        const DeleteExistPrintJob = await db.query("DELETE FROM printingjob WHERE fileid::text = $1 AND status = 'created'", [fileid]);
         const newPrintjob = await db.query("INSERT INTO printingjob (printerid, userid, fileid, papersize, numpage, numside, numcopy, \
             pagepersheet, colortype, orientation, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *", [
             printerid,
@@ -123,6 +130,11 @@ class PrintingJobService {
 
         if (paperSize == null || userId == null) throw new BadRequestError("Invalid parameter for saving CalculatePrice");
 
+        let checkStartDate = isNaN(Date.parse(startDate));
+        let checkEndDate = isNaN(Date.parse(endDate));
+
+        if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+
         let allPrintjob = await PrintJobModel.getPrintJobByUser({
             userId: userId, 
             startDate: startDate, 
@@ -141,6 +153,12 @@ class PrintingJobService {
     }
 
     static async CalculateTotalUser({startDate, endDate}: {startDate: string, endDate: string}) {
+
+        let checkStartDate = isNaN(Date.parse(startDate));
+        let checkEndDate = isNaN(Date.parse(endDate));
+
+        if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+
         let allPrintjob = await PrintJobModel.getPrintJobByDuration({
             startDate: startDate,
             endDate: endDate
