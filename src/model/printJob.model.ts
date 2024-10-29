@@ -36,8 +36,35 @@ class PrintingJobModel {
 
     static async getPrintJob(printJobId: string) {
         const printJob = await db.query("SELECT * FROM printingjob WHERE id = $1", [printJobId]);
-        if(printJob.rows.length == 0) throw new NotFoundError("Can not find this prinjob!");
+        if(printJob.rows.length == 0) throw new NotFoundError("Can not find this printjob!");
         return printJob.rows[0];
+    }
+
+    static async getPrintJobByUserAndPrinter(userId: string, printerId: string, startTime: string, endTime: string) {
+        let allPrintJob;
+
+        if(printerId == 'none' && userId == 'none')
+            allPrintJob = await db.query("SELECT * FROM printingjob WHERE starttime >= '"+ startTime +"' AND starttime <= '"+ endTime +"'");
+        else if(printerId == 'none')
+            allPrintJob = await db.query("SELECT * FROM printingjob WHERE userid = $1 AND starttime >= '"+ startTime +"' AND starttime <= '"+ endTime +"'", [userId]);
+        else if(userId == 'none')
+            allPrintJob = await db.query("SELECT * FROM printingjob WHERE printerid = $1 AND starttime >=  '"+ startTime +"' AND starttime <= '"+ endTime +"'", [printerId]);
+        else
+            allPrintJob = await db.query("SELECT * FROM printingjob WHERE userid = $1 AND printerid = $2 AND starttime >= '"+ startTime +"' AND starttime <= '"+ endTime +"'", 
+                          [userId, printerId]);
+        
+        return allPrintJob.rows;
+    }
+
+    static async deletePrintJob(printJobId: string) {
+        const DeleteExistPrintJob = await db.query("DELETE FROM printingjob WHERE id = $1", [printJobId]);
+    }
+
+    static async deletePrintJobByUserAndPrinter(userId: string, printerId: string, startTime: string, endTime: string) {
+        let allPrintJob = await PrintingJobModel.getPrintJobByUserAndPrinter(userId, printerId, startTime, endTime);
+        for(let i in allPrintJob) {
+            PrintingJobModel.deletePrintJob(allPrintJob[i].id);
+        }
     }
 
     static async updateStatus(printJobId: string, newStatus: string) {

@@ -8,7 +8,7 @@ import { BadRequestError, ForbiddenError, PaymentRequired } from "../helper/erro
 
 class PrintingController {
     static async ShowFile(req: Request, res: Response) {
-        if(req.user.role == "admin") throw new ForbiddenError("Only student can view this page!");
+        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
 
         let fileInformation = await PrintJobModel.getAllFile(req.user.id);
         return new OK({
@@ -18,6 +18,8 @@ class PrintingController {
     }
 
     static async CreatePrintJob(req: Request) {
+        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+
         req.body.status = "created";
         req.body.userid = req.user.id;
         
@@ -27,6 +29,8 @@ class PrintingController {
     }
 
     static async Print(req: Request, res: Response) {
+        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+
         const printJob = await PrintingController.CreatePrintJob(req);
         const price = await PrintJobService.CalculatePrice(JSON.stringify(req.body));
 
@@ -40,6 +44,8 @@ class PrintingController {
     }
 
     static async StartPrintJob(req: Request, res: Response) {
+        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+
         let printJob = await PrintJobModel.getPrintJob(req.body.printJobId);
 
         if(printJob.status == "success") {
@@ -65,6 +71,26 @@ class PrintingController {
         return new OK({ 
             message: "Accept printing request",
             data: "OK"
+        }).send(res);
+    }
+
+    static async getPrintingHistory(req: Request, res: Response) {
+        let userid = req.body.userId;
+        if(req.user.role == 'user') userid = req.user.id;
+
+        return new OK({
+            message: "All history printjob",
+            data: await PrintJobModel.getPrintJobByUserAndPrinter(userid, req.body.printerId, req.body.startDate, req.body.endDate)
+        }).send(res);
+    }
+
+    static async getNumberOfPage(req: Request, res: Response) {
+        let userid = req.body.userId;
+        if(req.user.role == 'user') userid = req.user.id;
+
+        return new OK({
+            message: "Total page",
+            data: await PrintJobService.CalculateNumPage(userid, req.body.paperSize, req.body.startDate, req.body.endDate)
         }).send(res);
     }
 }
