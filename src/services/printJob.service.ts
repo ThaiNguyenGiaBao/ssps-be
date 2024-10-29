@@ -26,6 +26,7 @@ class PrintingJobService {
         let checkEndDate = isNaN(Date.parse(endDate));
 
         if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+        if(userId != "none") await UserService.getUser(userId); // Check if user's exist
 
         if(userId != "none" && printerId != "none") {
             return await PrintJobModel.getPrintJobByUserAndPrinter({
@@ -83,6 +84,8 @@ class PrintingJobService {
             throw new NotFoundError("File is not exist");
         }
 
+        await UserService.getUser(userid); // Check if user's exist
+
         // TO-DO check if printer is not exist -> wait for printer service
 
         const DeleteExistPrintJob = await db.query("DELETE FROM printingjob WHERE fileid::text = $1 AND status = 'created'", [fileid]);
@@ -134,6 +137,8 @@ class PrintingJobService {
         let checkEndDate = isNaN(Date.parse(endDate));
 
         if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+
+        await UserService.getUser(userId); // Check if user's exist
 
         let allPrintjob = await PrintJobModel.getPrintJobByUser({
             userId: userId, 
