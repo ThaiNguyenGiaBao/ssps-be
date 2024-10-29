@@ -18,6 +18,13 @@ class UnauthorizedError extends ErrorResponse {
     }
 }
 
+
+class PaymentRequired extends ErrorResponse {
+    constructor(message: string) {
+        super(message, 402);
+    }
+}
+
 class NotFoundError extends ErrorResponse {
     constructor(message: string) {
         super(message, 404);
@@ -30,4 +37,4 @@ class ForbiddenError extends ErrorResponse {
     }
 }
 
-export { ErrorResponse, BadRequestError, UnauthorizedError, NotFoundError, ForbiddenError };
+export { ErrorResponse, BadRequestError, UnauthorizedError, NotFoundError, ForbiddenError, PaymentRequired };

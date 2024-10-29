@@ -130,6 +130,16 @@ class UserService {
 
         return deletedUser;
     }
+
+    static async getUserBalance(userId: string) {
+        const user = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
+        if(user.rows.length == 0) throw new NotFoundError("User not found");
+        return user.rows[0].coinbalance;
+    }
+
+    static async updateUserBalance(userId: string, value: number) {
+        const upadte = await db.query("UPDATE users SET coinbalance = $1 WHERE id = $2", [value, userId])
+    }
 }
 
 export default UserService;
