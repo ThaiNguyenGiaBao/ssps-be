@@ -22,16 +22,24 @@ class PrintingJobService {
     }
 
     static async CalculateNumPage(userID: string, paperSize: string, startTime: string, endTime: string) {
-        let allPrintjob = await PrintJobModel.getPrintJobByUserAndPrinter(userID, "none", startTime, endTime);
+        let allPrintjob = await PrintJobModel.getPrintJobByUserAndPrinter(userID, "none", startTime, endTime, ["success"]);
 
         let total_page = 0;
         for(let i in allPrintjob) {
             let printJob = allPrintjob[i];
-            if(printJob.papersize != paperSize) continue;
+            if(printJob.status != 'success') continue;
+            if(printJob.papersize != paperSize && paperSize != "none") continue;
             total_page += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
         }
 
         return total_page;
+    }
+
+    static async CalculateNumUserPrint(startTime: string, endTime: string) {
+        let allPrintjob = await PrintJobModel.getPrintJobByUserAndPrinter("none", "none", startTime, endTime, ["sucess", "unpaid", "fail", "waiting"]);
+        let user = new Set();
+        for(let i in allPrintjob) user.add(allPrintjob[i].userid);
+        return user.size;
     }
 }
 

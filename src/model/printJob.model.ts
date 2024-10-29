@@ -6,6 +6,11 @@ class PrintingJobModel {
         const fileResult = await db.query("SELECT * FROM file WHERE userid = $1", [userId]);
         return fileResult.rows
     }
+
+    static async checkFileBelongToUser(userId: string, fileId: string) {
+        const fileResult = await db.query("SELECT * FROM file WHERE userid = $1 AND id = $2", [userId, fileId]);
+        return (fileResult.rows.length != 0);
+    }
     
     static async savePrintJob(cfgJSON: string) {
         let cfg = JSON.parse(cfgJSON);
@@ -40,7 +45,7 @@ class PrintingJobModel {
         return printJob.rows[0];
     }
 
-    static async getPrintJobByUserAndPrinter(userId: string, printerId: string, startTime: string, endTime: string) {
+    static async getPrintJobByUserAndPrinter(userId: string, printerId: string, startTime: string, endTime: string, status: Array<string>) {
         let allPrintJob;
 
         if(printerId == 'none' && userId == 'none')
@@ -53,7 +58,14 @@ class PrintingJobModel {
             allPrintJob = await db.query("SELECT * FROM printingjob WHERE userid = $1 AND printerid = $2 AND starttime >= '"+ startTime +"' AND starttime <= '"+ endTime +"'", 
                           [userId, printerId]);
         
-        return allPrintJob.rows;
+        let set = new Set(status);
+        let result = [];
+        for(let i in allPrintJob.rows) {
+            if(set.has(allPrintJob.rows[i].status)) {
+                result.push(allPrintJob.rows[i]);
+            }
+        }
+        return result;
     }
 
     static async deletePrintJob(printJobId: string) {
@@ -61,7 +73,7 @@ class PrintingJobModel {
     }
 
     static async deletePrintJobByUserAndPrinter(userId: string, printerId: string, startTime: string, endTime: string) {
-        let allPrintJob = await PrintingJobModel.getPrintJobByUserAndPrinter(userId, printerId, startTime, endTime);
+        let allPrintJob = await PrintingJobModel.getPrintJobByUserAndPrinter(userId, printerId, startTime, endTime, ["success", "unpaid", "fail", "waiting", "created"]);
         for(let i in allPrintJob) {
             PrintingJobModel.deletePrintJob(allPrintJob[i].id);
         }

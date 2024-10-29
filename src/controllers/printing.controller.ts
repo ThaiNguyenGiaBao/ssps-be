@@ -24,13 +24,15 @@ class PrintingController {
         req.body.userid = req.user.id;
         
         let printJob = await PrintJobModel.savePrintJob(JSON.stringify(req.body))
-        console.log(printJob);
         return printJob;
     }
 
     static async Print(req: Request, res: Response) {
         if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
-
+        if(!(await PrintJobModel.checkFileBelongToUser(req.user.id, req.body.fileid))) {
+            throw new BadRequestError("User doesn't have this file!");
+        }
+        
         const printJob = await PrintingController.CreatePrintJob(req);
         const price = await PrintJobService.CalculatePrice(JSON.stringify(req.body));
 
@@ -80,7 +82,7 @@ class PrintingController {
 
         return new OK({
             message: "All history printjob",
-            data: await PrintJobModel.getPrintJobByUserAndPrinter(userid, req.body.printerId, req.body.startDate, req.body.endDate)
+            data: await PrintJobModel.getPrintJobByUserAndPrinter(userid, req.body.printerId, req.body.startDate, req.body.endDate, req.body.status)
         }).send(res);
     }
 
@@ -91,6 +93,15 @@ class PrintingController {
         return new OK({
             message: "Total page",
             data: await PrintJobService.CalculateNumPage(userid, req.body.paperSize, req.body.startDate, req.body.endDate)
+        }).send(res);
+    }
+
+    static async getNumberOfUserPrint(req: Request, res: Response) {
+        if(req.body.role == 'user') throw new ForbiddenError("Only accept admin");
+
+        return new OK({
+            message: "Total user use printing service",
+            data: await PrintJobService.CalculateNumUserPrint(req.body.startDate, req.body.endDate)
         }).send(res);
     }
 }
