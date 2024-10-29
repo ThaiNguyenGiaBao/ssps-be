@@ -6,28 +6,18 @@ import PrintingController from "../../controllers/printJob.controller";
 const router = express.Router();
 
 router.use(asyncHandler(authenticateToken));
-router.post("/print", asyncHandler(PrintingController.Print));
-router.post("/request-printing", asyncHandler(PrintingController.StartPrintJob));
-// GET /printjob/user/:userId
-router.get("/user/:userId", asyncHandler(PrintingController.getPrintingHistory)); //GetPrintingHistoryByUserId
 
-// GET /printjob/printer/:printerId
-router.get("/printer/:printerId", asyncHandler(PrintingController.getPrintingHistory)); //GetPrintingHistoryByPrinterId
+router.post("/createPrintJob", asyncHandler(PrintingController.CreatePrintJob));
+router.post("/startPrintJob", asyncHandler(PrintingController.StartPrintJob));
 
-// GET /:printJobId
-//router.get("/:printJobId", asyncHandler(PrintingController.getPrintJob)); //GetPrintJob
+router.get("/all", asyncHandler(PrintingController.getAllPrintingHistory));
+router.get("/user/:userId", asyncHandler(PrintingController.getPrintingHistoryByUser));
+router.get("/printer/:printerId", asyncHandler(PrintingController.getPrintingHistoryByPrinter));
 
+router.get("/totalPage/:userId", asyncHandler(PrintingController.getTotalPage));
+router.get("/totalUser", asyncHandler(PrintingController.getTotalUser));
 
-// // GET
-// router.get("/totalnumpage/:userId", asyncHandler(PrintingController.getNumberOfPage));
-
-
-
-// // GET
-// router.get("/totalUser?startDate=string&endDate=string, asyncHandler(PrintingController.getTotalUser));
-
-// GET POST req {id, name, password, ..}, res {user} POST /user {name, password, ..}
-// GET req  {id, filename} , res {file, priner} GET /file/:id
+router.get("/:printjobId", asyncHandler(PrintingController.getPrintJob));
 
 export default router;
 
