@@ -1,123 +1,194 @@
-import PrinterService from "../services/printer.service";
 import PrintJobService from "../services/printJob.service";
-import PrintJobModel from "../model/printJob.model";
 import UserService from "../services/user.service";
 import { Request, Response } from "express";
 import { OK, Created } from "../helper/successResponse";
 import { BadRequestError, ForbiddenError, PaymentRequired } from "../helper/errorRespone";
-import PrintingService from "../services/printer.service";
 
-// Controller vs Service
-
-// CreatePrintJob (save config to db, calc price,  return {printJob, price})
-
-// StartPrintJob (send req to printer (fake API), update status, return {printJob})
-
-class PrintingController {
-    // Controller must to return { message: string, data: any }
-    // Anything else must write in service
-
-    // Create print job (store in db), calculate price, return print job and price
-    static async CreatePrintJob(req: Request) {
-        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
-
-        req.body.status = "created";
-        req.body.userid = req.user.id;
-
-        let printJob = await PrintJobModel.savePrintJob(JSON.stringify(req.body));
-        return new Created({
-            message: "Print job created",
-            data: printJob
+class PrintJobController {
+    
+    // Route /createPrintJob 
+    static async CreatePrintJob(req: Request, res: Response) {
+        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+        
+        let printJob = await PrintJobService.savePrintJob({
+            printerid:      req.body.printerid,
+            userid:         req.user.id, 
+            fileid:         req.body.fileid,
+            papersize:      req.body.papersize,
+            numpage:        req.body.numpage,
+            numside:        req.body.numside,
+            numcopy:        req.body.numcopy,
+            pagepersheet:   req.body.pagepersheet,
+            colortype:      req.body.colortype,
+            orientation:    req.body.orientation,
+            status:         "created"
         });
-    }
 
-    // Print file (call Fake API), update print job status, return message
-    static async Print(req: Request, res: Response) {
-        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
-        if (!(await PrintJobModel.checkFileBelongToUser(req.user.id, req.body.fileid))) {
-            throw new BadRequestError("User doesn't have this file!");
-        }
+        const price = await PrintJobService.CalculatePrice({
+            papersize:      req.body.papersize,
+            colortype:      req.body.colortype,
+            numpage:        req.body.numpage,
+            numside:        req.body.numside,
+            pagepersheet:   req.body.pagepersheet,
+            numcopy:        req.body.numcopy
+        });
 
-        //const printJob = await PrintingService.CreatePrintJob({});
-        const price = await PrintJobService.CalculatePrice(JSON.stringify(req.body));
-
-        return new OK({
-            message: "Ready for printing!",
+        return new Created({
+            message: "PrintJob created",
             data: {
-                //printJob: printJob,
-                price: price
+                "printJob": printJob,
+                "price": price
             }
         }).send(res);
     }
 
+    // Route /startPrintJob
     static async StartPrintJob(req: Request, res: Response) {
-        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
+        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
 
-        let printJob = await PrintJobModel.getPrintJob(req.body.printJobId);
+        let printJob = await PrintJobService.getPrintJob(req.body.printJobId);
 
-        if (printJob.status == "success") {
-            printJob = await PrintJobModel.clonePrintJob(req.body.printJobId);
-            req.body.printJobId = printJob.id;
-        }
-
-
-        // Send request to printer
-        // NOT DONE TASK: CHECK PERMITTED FILE HERE //
+        // TO-DO: CHECK PERMITTED FILE HERE //
 
         let userBalance = await UserService.getUserBalance(req.user.id);
-        let price = await PrintJobService.CalculatePrice(JSON.stringify(printJob));
-        if (price > userBalance) {
-            await PrintJobModel.updateStatus(req.body.printJobId, "unpaid");
+        let price = await PrintJobService.CalculatePrice({
+            papersize:      printJob.papersize,
+            colortype:      printJob.colortype,
+            numpage:        printJob.numpage,
+            numside:        printJob.numside,
+            pagepersheet:   printJob.pagepersheet,
+            numcopy:        printJob.numcopy
+        });
+
+        if(price > userBalance) {
+            await PrintJobService.updateStatus({
+                printJobId: req.body.printJobId,
+                newStatus: "unpaid"
+            });
             throw new PaymentRequired("User does not have enough coin!");
         }
 
         await UserService.updateUserBalance(req.user.id, userBalance - price);
-        await PrintJobModel.updateStatus(req.body.printJobId, "waiting");
+        await PrintJobService.updateStatus({
+            printJobId: req.body.printJobId,
+            newStatus: "waiting"
+        });
 
         // send printing request and done task
-        //PrinterService.printFile(req.body.printJobId);
+        // Printfile
+
+        // Dont need await here, in reality, we just send printjob to printer and printer will update printJob status.
+        // Our task in this controller is to send request, not to wait for it to be finished.
+        PrintJobService.updateStatus({
+            printJobId: req.body.printJobId,
+            newStatus: "success"
+        });
 
         return new OK({
             message: "Accept printing request",
-            data: "OK" // Return PringJob
+            data: printJob
         }).send(res);
     }
 
-    // Should separate to two function: getPrintJobByUserId and getPrintJobByPrinterId; add function getAllPrintJobs
-    static async getPrintingHistory(req: Request, res: Response) {
-        let userid = req.body.userId;
-        if (req.user.role == "user") userid = req.user.id;
+    // Route /all : Get all history
+    static async getAllPrintingHistory(req: Request, res: Response) {
+        if(req.user.role == "user") throw new ForbiddenError("Permission denied on getting history of other user");
 
         return new OK({
-            message: "All history printjob",
-            data: await PrintJobModel.getPrintJobByUserAndPrinter(
-                userid,
-                req.body.printerId,
-                req.body.startDate,
-                req.body.endDate,
-                req.body.status
-            )
+            message: "All history",
+            data: await PrintJobService.getPrintingHistoryByUserAndPrinter({
+                userId:     "none", 
+                printerId:  "none",
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+            })
         }).send(res);
     }
 
-    static async getNumberOfPage(req: Request, res: Response) {
-        let userid = req.body.userId;
-        if (req.user.role == "user") userid = req.user.id;
+    // Route /user/:userId : Get history of a user
+    static async getPrintingHistoryByUser(req: Request, res: Response) {
+        
+        if(req.user.role == "user" && req.params.userId != req.user.id) {
+            throw new ForbiddenError("Permission denied on getting history of other user");
+        }
 
         return new OK({
-            message: "Total page",
-            data: await PrintJobService.CalculateNumPage(userid, req.body.paperSize, req.body.startDate, req.body.endDate)
+            message: "All history printjob of user",
+            data: await PrintJobService.getPrintingHistoryByUserAndPrinter({
+                userId:     req.params.userId, 
+                printerId:  "none",
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+            })
         }).send(res);
     }
 
-    static async getNumberOfUserPrint(req: Request, res: Response) {
-        if (req.body.role == "user") throw new ForbiddenError("Only accept admin");
+    // Route /printer/:printerId : Get history of a printer
+    // If user's role is admin, return all printJob of a printer
+    // If user's role is user, return all printJob belong to that user of a printer
+    static async getPrintingHistoryByPrinter(req: Request, res: Response) {
+        let userId = req.user.id;
+        if(req.user.role == "admin") userId = "none";
+
+        let result = await PrintJobService.getPrintingHistoryByUserAndPrinter({
+            userId:     userId,
+            printerId:  req.params.printerId,
+            startDate:  req.query.startDate as string,
+            endDate:    req.query.endDate as string, 
+        });
+        
+        return new OK({
+            message: "All history printjob of printer",
+            data: result
+        }).send(res);
+    }
+
+    static async getPrintJob(req: Request, res: Response) {
+        let printJob = await PrintJobService.getPrintJob(req.params.printjobId)
+        if(req.user.role == 'user' && req.user.id != printJob.userid) {
+            throw new ForbiddenError("Permission denied on getting other user's printJob");
+        }
 
         return new OK({
-            message: "Total user use printing service",
-            data: await PrintJobService.CalculateNumUserPrint(req.body.startDate, req.body.endDate)
+            message: "PrintJob",
+            data: printJob
+        }).send(res);
+    }
+
+    // Route /totalPage/:userId : Get total page used by a user
+    static async getTotalPage(req: Request, res: Response) {
+        
+        if(req.user.role == "user" && req.params.userId != req.user.id) {
+            throw new ForbiddenError("Permission denied on getting other user's total page");
+        }
+
+        return new OK({
+            message: "Total printed page of user",
+            data: await PrintJobService.CalculateTotalPage({
+                userId:     req.params.userId,
+                paperSize:  req.query.paperSize as string,
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+            })
+        }).send(res);
+    }
+
+
+    // Route /totalUser : Get total user active from startDate to endDate
+    static async getTotalUser(req: Request, res: Response) {
+        if(req.user.role != "admin") {
+            throw new ForbiddenError("Only admin can get total number of user");
+        }
+
+        return new OK({
+            message: "Total user",
+            data: await PrintJobService.CalculateTotalUser({
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+            })
         }).send(res);
     }
 }
 
-export default PrintingController;
+
+export default PrintJobController;
