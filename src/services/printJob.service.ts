@@ -55,6 +55,7 @@ class PrintingJobService {
             colortype,
             orientation, 
             status
+            
         ]);
     
         return newPrintjob.rows[0];
