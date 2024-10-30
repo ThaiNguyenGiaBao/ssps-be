@@ -4,6 +4,7 @@ import AccessRouter from "./access";
 import PrintingRouter from "./printing";
 import UserRouter from "./user";
 import FileRouter from "./file";
+import PrinterRouter from "./printer";
 const router = express.Router();
 
 router.get("/", (req: Request, res: Response) => {
@@ -16,5 +17,7 @@ router.use("/api/printing", PrintingRouter);
 router.use("/api/user", UserRouter);
 
 router.use("/api/file", FileRouter);
+
+router.use("/api/printer", PrinterRouter);
 
 export default router;
