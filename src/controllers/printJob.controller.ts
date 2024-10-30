@@ -8,6 +8,8 @@ class PrintJobController {
     
     // Route /createPrintJob 
     static async CreatePrintJob(req: Request, res: Response) {
+
+        console.log("PrintJobController::CreatePrintJob", req.body);
         if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
         
         let printJob = await PrintJobService.savePrintJob({
@@ -45,6 +47,8 @@ class PrintJobController {
 
     // Route /startPrintJob
     static async StartPrintJob(req: Request, res: Response) {
+
+        console.log("PrintJobController::StartPrintJob", req.body);
         if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
 
         let printJob = await PrintJobService.getPrintJob(req.body.printJobId);
@@ -93,6 +97,7 @@ class PrintJobController {
 
     // Route /all : Get all history
     static async getAllPrintingHistory(req: Request, res: Response) {
+        console.log("PrintJobController::getAllPrintingHistory", req.query);
         if(req.user.role == "user") throw new ForbiddenError("Permission denied on getting history of other user");
 
         return new OK({
@@ -109,6 +114,7 @@ class PrintJobController {
     // Route /user/:userId : Get history of a user
     static async getPrintingHistoryByUser(req: Request, res: Response) {
         
+        console.log("PrintJobController::getPrintingHistoryByUser", req.params, req.query);
         if(req.user.role == "user" && req.params.userId != req.user.id) {
             throw new ForbiddenError("Permission denied on getting history of other user");
         }
@@ -128,6 +134,8 @@ class PrintJobController {
     // If user's role is admin, return all printJob of a printer
     // If user's role is user, return all printJob belong to that user of a printer
     static async getPrintingHistoryByPrinter(req: Request, res: Response) {
+
+        console.log("PrintJobController::getPrintingHistoryByPrinter", req.params, req.query);
         let userId = req.user.id;
         if(req.user.role == "admin") userId = "none";
 
@@ -145,6 +153,8 @@ class PrintJobController {
     }
 
     static async getPrintJob(req: Request, res: Response) {
+
+        console.log("PrintJobController::getPrintJob", req.params);
         let printJob = await PrintJobService.getPrintJob(req.params.printjobId)
         if(req.user.role == 'user' && req.user.id != printJob.userid) {
             throw new ForbiddenError("Permission denied on getting other user's printJob");
@@ -159,6 +169,7 @@ class PrintJobController {
     // Route /totalPage/:userId : Get total page used by a user
     static async getTotalPage(req: Request, res: Response) {
         
+        console.log("PrintJobController::getTotalPage", req.params, req.query);
         if(req.user.role == "user" && req.params.userId != req.user.id) {
             throw new ForbiddenError("Permission denied on getting other user's total page");
         }
@@ -177,6 +188,8 @@ class PrintJobController {
 
     // Route /totalUser : Get total user active from startDate to endDate
     static async getTotalUser(req: Request, res: Response) {
+
+        console.log("PrintJobController::getTotalUser", req.params, req.query);
         if(req.user.role != "admin") {
             throw new ForbiddenError("Only admin can get total number of user");
         }
