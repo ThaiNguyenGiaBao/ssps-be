@@ -6,7 +6,7 @@ import PrintingController from "../../controllers/printing.controller";
 const router = express.Router();
 
 //router.use(asyncHandler(authenticateToken));
-router.post("/print", asyncHandler(PrintingController.printFile));
+// router.post("/print", asyncHandler(PrintingController.printFile));
 
 export default router;
 
