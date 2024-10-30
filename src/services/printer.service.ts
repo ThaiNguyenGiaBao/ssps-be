@@ -1,8 +1,6 @@
 import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "../helper/errorRespone";
 
-import PrintingService from "../services/printer.service";
-import { Request, Response } from "express";
-import { OK, Created } from "../helper/successResponse";
+
 import { Printer } from "../model/printer.model";
 import PrinterModel from "../model/printer.model";
 
@@ -13,6 +11,10 @@ class PrinterService {
   }
 
   static async getPrinterByID(printerID: string): Promise<Printer> {
+    if(!printerID) {
+      throw new BadRequestError("Printer ID is required");
+    }
+
     const result: Printer | null = await PrinterModel.findPrinterByID(printerID);
     if (result === null) 
       throw new NotFoundError("Cannot find the printer with ID " + printerID)
@@ -39,6 +41,9 @@ class PrinterService {
   }
 
   static async removePrinter(printerID: string): Promise<Printer> {
+    if (!printerID)
+      throw new BadRequestError("Printer ID is required");
+  
     const result = await PrinterModel.deletePrinter(printerID);
     if (result === null)
       throw new NotFoundError("Cannot found the printer to delete");

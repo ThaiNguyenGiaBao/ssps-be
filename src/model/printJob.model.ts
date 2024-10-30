@@ -20,9 +20,10 @@ class PrintingJobModel {
         endDate: string;
     }) {
         let allPrintJob;
+        console.log(userId, printerId, startDate, endDate);
 
-        if (startDate == "") startDate = "0001:01:01T00:00:00";
-        if (endDate == "") endDate = "3000:01:01T00:00:00";
+        if (startDate == " ") startDate = "0001:01:01T00:00:00";
+        if (endDate == " ") endDate = "3000:01:01T00:00:00";
 
         if (printerId == "none" && userId == "none")
             allPrintJob = await db.query(
