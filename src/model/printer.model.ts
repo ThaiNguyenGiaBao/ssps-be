@@ -1,5 +1,6 @@
 import { query } from "express";
 import db from "../dbs/initDatabase";
+import { BadRequestError } from "../helper/errorRespone";
 
 export interface Printer {
   id: string,

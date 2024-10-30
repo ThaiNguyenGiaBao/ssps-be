@@ -13,6 +13,9 @@ class PrinterService {
   }
 
   static async getPrinterByID(printerID: string): Promise<Printer> {
+    if (!printerID) {
+      throw new BadRequestError("Printer ID is required.")
+    }
     const result: Printer | null = await PrinterModel.findPrinterByID(printerID);
     if (result === null) 
       throw new NotFoundError("Cannot find the printer with ID " + printerID)
@@ -39,6 +42,9 @@ class PrinterService {
   }
 
   static async removePrinter(printerID: string): Promise<Printer> {
+    if (!printerID) 
+      throw new BadRequestError("Printer ID is required.")
+    
     const result = await PrinterModel.deletePrinter(printerID);
     if (result === null)
       throw new NotFoundError("Cannot found the printer to delete");
@@ -46,8 +52,18 @@ class PrinterService {
   }
 
   static async updatePrinter(printerID: string, data: Partial<Printer>): Promise<Printer> {
+    if (!printerID)
+      throw new BadRequestError("Printer ID is required.")
+
+    const values = Object.values(data);
+    values.forEach(value => {
+      if (!value)
+        throw new BadRequestError("Updated value cannot be null | undefined!")
+    })
+    
     if (data.status && data.status !== "enabled" && data.status != "disabled")
       throw new BadRequestError("Printer status must be 'enabled' or 'disabled'");  
+    
 
     const result = await PrinterModel.updatePrinter(printerID, data);
     if (result === null) 
