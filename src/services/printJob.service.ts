@@ -22,10 +22,13 @@ class PrintingJobService {
         if(userId == null) throw new BadRequestError("userId is null");
         if(printerId == null) throw new BadRequestError("printerId is null");
 
-        let checkStartDate = isNaN(Date.parse(startDate));
-        let checkEndDate = isNaN(Date.parse(endDate));
+        if(startDate != null && endDate!= null) {
+            let checkStartDate = isNaN(Date.parse(startDate));
+            let checkEndDate = isNaN(Date.parse(endDate));
 
-        if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+            if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+        }
+
         if(userId != "none") await UserService.getUser(userId); // Check if user's exist
 
         if(userId != "none" && printerId != "none") {
@@ -133,10 +136,12 @@ class PrintingJobService {
 
         if (paperSize == null || userId == null) throw new BadRequestError("Invalid parameter for saving CalculatePrice");
 
-        let checkStartDate = isNaN(Date.parse(startDate));
-        let checkEndDate = isNaN(Date.parse(endDate));
+        if(startDate != null && endDate!= null) {
+            let checkStartDate = isNaN(Date.parse(startDate));
+            let checkEndDate = isNaN(Date.parse(endDate));
 
-        if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+            if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+        }
 
         await UserService.getUser(userId); // Check if user's exist
 
@@ -159,10 +164,12 @@ class PrintingJobService {
 
     static async CalculateTotalUser({startDate, endDate}: {startDate: string, endDate: string}) {
 
-        let checkStartDate = isNaN(Date.parse(startDate));
-        let checkEndDate = isNaN(Date.parse(endDate));
+        if(startDate != null && endDate!= null) {
+            let checkStartDate = isNaN(Date.parse(startDate));
+            let checkEndDate = isNaN(Date.parse(endDate));
 
-        if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+            if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+        }
 
         let allPrintjob = await PrintJobModel.getPrintJobByDuration({
             startDate: startDate,
