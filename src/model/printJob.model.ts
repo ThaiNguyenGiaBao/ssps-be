@@ -52,7 +52,7 @@ class PrintingJobModel {
     }
 
     static async updateStatus(printJobId: string, newStatus: string) {
-        const upadte = await db.query("UPDATE printingjob SET status = $1 WHERE id = $2", [newStatus, printJobId])
+        const upadte = await db.query("UPDATE printingjob SET status = $1 WHERE id = $2", [newStatus, printJobId]);
     }
 }
 

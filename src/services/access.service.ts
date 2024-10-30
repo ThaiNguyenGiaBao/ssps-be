@@ -3,6 +3,7 @@ import db from "../dbs/initDatabase";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import userModel from "../model/user.model";
 dotenv.config();
 
 class AccessService {
@@ -16,13 +17,12 @@ class AccessService {
         }
 
         // Check if the user already exists
-        const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+        //const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+        const userResult = await userModel.findUserByEmail(email);
 
-        if (userResult.rows.length > 0) {
-            throw new BadRequestError("User already exists");
+        if (userResult) {
+            throw new ForbiddenError("User already exists");
         }
-
-        
 
         const avatarUrl = "https://avatar.iran.liara.run/username?username=" + username;
 
@@ -30,17 +30,15 @@ class AccessService {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create a new user
-        const newUserResult = await db.query(
-            `INSERT INTO users (email, name, password, avatarUrl) 
-             VALUES ($1, $2, $3, $4) RETURNING *`,
-            [email, username, hashedPassword, avatarUrl]
-        );
+        const newUser = await userModel.createUser({
+            email,
+            username,
+            hashedPassword,
+            avatarUrl
+        });
 
-        const newUser = newUserResult.rows[0];
-
-        
         console.log("New user", newUser);
-        
+
         // Remove the password from the response
         delete newUser.password;
         return {
@@ -53,9 +51,7 @@ class AccessService {
             throw new BadRequestError("Email and password are required");
         }
 
-        const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
-        const user = userResult.rows[0];
-
+        const user = await userModel.findUserByEmail(email);
         if (!user) {
             throw new NotFoundError("User not found");
         }

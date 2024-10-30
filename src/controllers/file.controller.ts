@@ -23,13 +23,13 @@ class FileController {
     static async deleteFile(req: Request, res: Response) {
         console.log("FileController::deleteFile", req.body);
 
-        if (req.user.id != req.body.userId && req.user.role != "admin") {
+        if (!req.user.id && req.user.role != "admin") {
             throw new ForbiddenError("Permission denied on deleting file");
         }
 
         return new OK({
             message: "File deleted successfully",
-            data: await FileService.deleteFile(req.body.fileId)
+            data: await FileService.deleteFile({ userId: req.user.id, fileId: req.body.fileId })
         }).send(res);
     }
 

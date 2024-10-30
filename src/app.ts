@@ -8,7 +8,6 @@ import yaml from "yamljs";
 import path from "path";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import storage from "./configs/firebase";
 
 const app = express();
 
@@ -18,15 +17,17 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+    cors({
+        origin: "*", // or specify an array of trusted origins in production
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"] // Allow Authorization header
+    })
+);
 app.use(cookieParser());
-
-
 
 // init router
 app.use("/", router);
-
-
 
 // swagger
 const swaggerDocument = yaml.load(path.join(__dirname, "../swagger.yml"));

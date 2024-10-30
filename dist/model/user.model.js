@@ -12,21 +12,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authenticateToken = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const errorRespone_1 = require("../helper/errorRespone");
-const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.cookies.token;
-    if (!token) {
-        throw new errorRespone_1.UnauthorizedError("Unauthorized");
+const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
+class AccessModel {
+    static findUserByEmail(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield initDatabase_1.default.query("SELECT * FROM users WHERE email = $1", [email]);
+            //console.log(user);
+            return user.rows[0];
+        });
     }
-    jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || "secret", (err, member) => __awaiter(void 0, void 0, void 0, function* () {
-        if (err) {
-            throw new errorRespone_1.UnauthorizedError("Unauthorized");
-        }
-        req.user = member;
-        console.log("User authenticated::", req.user);
-        next();
-    }));
-});
-exports.authenticateToken = authenticateToken;
+    static createUser(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ email, username, hashedPassword, avatarUrl }) {
+            const newUserResult = yield initDatabase_1.default.query(`INSERT INTO users (email, name, password, avatarUrl) 
+             VALUES ($1, $2, $3, $4) RETURNING *`, [email, username, hashedPassword, avatarUrl]);
+            return newUserResult.rows[0];
+        });
+    }
+}
+exports.default = AccessModel;

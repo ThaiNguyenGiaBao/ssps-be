@@ -35,6 +35,7 @@ class PrintJobController {
             numcopy:        req.body.numcopy
         });
 
+
         return new Created({
             message: "PrintJob created",
             data: {
@@ -192,6 +193,7 @@ class PrintJobController {
         if(req.user.role != "admin") {
             throw new ForbiddenError("Only admin can get total number of user");
         }
+        
 
         return new OK({
             message: "Total user",

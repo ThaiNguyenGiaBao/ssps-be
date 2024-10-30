@@ -1,5 +1,5 @@
-import PrintJobModel from "../model/printJob.model"
-import UserService from "../services/user.service"
+import PrintJobModel from "../model/printJob.model";
+import UserService from "../services/user.service";
 import db from "../dbs/initDatabase";
 import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 
@@ -120,13 +120,13 @@ class PrintingJobService {
         ) throw new BadRequestError("Invalid parameter for saving CalculatePrice");
         
         let base_coin = 1;
-        if(papersize == 'A4') base_coin = 2;
-        if(papersize == 'A3') base_coin = 4;
-        if(papersize == 'A2') base_coin = 8;
-        if(papersize == 'A1') base_coin = 16;
+        if (papersize == "A4") base_coin = 2;
+        if (papersize == "A3") base_coin = 4;
+        if (papersize == "A2") base_coin = 8;
+        if (papersize == "A1") base_coin = 16;
 
         let color_price = 1;
-        if(colortype != 'Grayscale') color_price = 2;
+        if (colortype != "Grayscale") color_price = 2;
 
         return Math.ceil(numpage / (numside * pagepersheet)) * numcopy * base_coin * color_price;
     }
@@ -152,10 +152,10 @@ class PrintingJobService {
         });
 
         let total_page = 0;
-        for(let i in allPrintjob) {
+        for (let i in allPrintjob) {
             let printJob = allPrintjob[i];
-            if(printJob.status != 'success') continue;
-            if(printJob.papersize != paperSize && paperSize != "none") continue;
+            if (printJob.status != "success") continue;
+            if (printJob.papersize != paperSize && paperSize != "none") continue;
             total_page += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
         }
 
@@ -177,7 +177,7 @@ class PrintingJobService {
         });
 
         let user = new Set();
-        for(let i in allPrintjob) user.add(allPrintjob[i].userid);
+        for (let i in allPrintjob) user.add(allPrintjob[i].userid);
         return user.size;
     }
 }

@@ -5,9 +5,14 @@ import { OK, Created } from "../helper/successResponse";
 class AccessController {
     static async SignUp(req: Request, res: Response) {
         console.log("AccessController::SignUp", req.body);
+        
         return new Created({
             message: "User created successfully",
-            data: await AccessService.SignUp(req.body)
+            data: await AccessService.SignUp({
+                email: req.body.email,
+                password: req.body.password,
+                username: req.body.username
+            })
         }).send(res);
     }
 

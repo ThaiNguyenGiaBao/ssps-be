@@ -1,10 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class PrintingService {
-    static printFile() {
-        return {
-            data: "File data"
-        };
-    }
+class PrinterService {
 }
-exports.default = PrintingService;
+exports.default = PrinterService;

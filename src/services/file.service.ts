@@ -36,12 +36,12 @@ class FileService {
     }
 
     // router.delete("/delete", asyncHandler(FileController.deleteFile));
-    static async deleteFile(fileId: string) {
+    static async deleteFile({ userId, fileId }: { userId: string; fileId: string }) {
         if (!fileId) {
             throw new BadRequestError("File Id is required");
         }
 
-        const file = await db.query("DELETE FROM file WHERE id = $1 RETURNING *", [fileId]);
+        const file = await db.query("DELETE FROM file WHERE id = $1 and userId = $2 RETURNING *", [fileId, userId]);
         if (file.rows.length === 0) {
             throw new NotFoundError("File not found");
         }

@@ -31,7 +31,11 @@ class AccessController {
             console.log("AccessController::SignUp", req.body);
             return new successResponse_1.Created({
                 message: "User created successfully",
-                data: yield access_service_1.default.SignUp(req.body)
+                data: yield access_service_1.default.SignUp({
+                    email: req.body.email,
+                    password: req.body.password,
+                    username: req.body.username
+                })
             }).send(res);
         });
     }
