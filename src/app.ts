@@ -17,15 +17,15 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+    cors({
+        origin: "*"
+    })
+);
 app.use(cookieParser());
-
-
 
 // init router
 app.use("/", router);
-
-
 
 // swagger
 const swaggerDocument = yaml.load(path.join(__dirname, "../swagger.yml"));
