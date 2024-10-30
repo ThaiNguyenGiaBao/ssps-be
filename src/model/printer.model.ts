@@ -46,12 +46,14 @@ export default class PrinterModel {
     if (fields.length === 0) {
       throw new Error("No fields provided to update");
     }
-    const setClauses = fields.map((field, index) => `${field} = ${values[index]}`).join(', ');
+    const setClauses = fields.map((field, index) => `${field} = $${index+1}`).join(', ');
+
+    console.log(setClauses)
     const result = await db.query(`
       UPDATE PRINTER
       SET ${setClauses}
-      WHERE ID = $1
-      RETURNING *`, [printerID]); 
+      WHERE ID = $2
+      RETURNING *`, [...values, printerID]); 
     return result.rows[0] || null;
   }
 

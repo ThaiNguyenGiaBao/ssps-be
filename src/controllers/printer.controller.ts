@@ -4,6 +4,7 @@ import { BadRequestError, ForbiddenError } from "../helper/errorRespone";
 
 import PrinterService from "../services/printer.service";
 import { Printer } from "../model/printer.model";
+
 class PrinterController {
   static async getPrinter(req: Request, res: Response) {
     if (req.params.id) {
@@ -24,27 +25,13 @@ class PrinterController {
   }
 
   static async addPrinter(req: Request, res: Response) {
-    // Check for mandatory attribute
-    console.log(req.body)
-    if (!req.body.brand)
-      throw new BadRequestError("Printer Brand is required");
-    if (!req.body.model)
-      throw new BadRequestError("Printer Model is required");
-    if (!req.body.status)
-      throw new BadRequestError("Printer Status is required");
-
-    // Check for invalid type
-    if (req.body.status !== "enabled" && req.body.status !== "disabled")
-      throw new BadRequestError("Printer status must be enabled or disabled");
-
-
     const printer: Printer = {
       id: "dummy",
       brand: req.body.brand,
       model: req.body.model,
       status: req.body.status,
-      ...(req.body.locationId && { locationId: req.body.locationId }),
-      ...(req.body.shortDescription && { locationId: req.body.shortDescription })
+      locationId: req.body.locationId,
+      shortDescription: req.body.shortDescription
     }
     const result = await PrinterService.addPrinter(printer);
     return new Created({
@@ -54,8 +41,6 @@ class PrinterController {
   }
 
   static async removePrinter(req: Request, res: Response) {
-    // console.log(req.params.id)
-    // console.log(typeof req.params.id)
     const result = await PrinterService.removePrinter(req.params.id);
     return new OK({
       message: "Delete successfully",
