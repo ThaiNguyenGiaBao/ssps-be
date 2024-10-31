@@ -19,10 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: (origin, callback) => {
-            // Allow requests from any origin
-            callback(null, origin || "*");
-        },
+        origin: true, // This is a security issue, allowing all origins
         credentials: true // This allows cookies to be sent/received
     })
 );
