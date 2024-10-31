@@ -19,9 +19,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: "*", // or specify an array of trusted origins in production
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"] // Allow Authorization header
+        origin: (origin, callback) => {
+            // Allow requests from any origin
+            callback(null, origin || "*");
+        },
+        credentials: true // This allows cookies to be sent/received
     })
 );
 app.use(cookieParser());
