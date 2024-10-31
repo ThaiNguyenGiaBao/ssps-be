@@ -8,7 +8,7 @@ const access_1 = __importDefault(require("./access"));
 const printJob_1 = __importDefault(require("./printJob"));
 const user_1 = __importDefault(require("./user"));
 const file_1 = __importDefault(require("./file"));
-//import PrinterRouter from "./printer";
+const printer_1 = __importDefault(require("./printer"));
 const router = express_1.default.Router();
 router.get("/", (req, res) => {
     res.json({ message: "Hello World" });
@@ -17,5 +17,5 @@ router.use("/api/auth", access_1.default);
 router.use("/api/printjob", printJob_1.default);
 router.use("/api/user", user_1.default);
 router.use("/api/file", file_1.default);
-//router.use("/api/printer", PrinterRouter);
+router.use("/api/printer", printer_1.default);
 exports.default = router;

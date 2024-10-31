@@ -20,7 +20,13 @@ app.use((0, helmet_1.default)());
 app.use((0, compression_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: (origin, callback) => {
+        // Allow requests from any origin
+        callback(null, origin || "*");
+    },
+    credentials: true // This allows cookies to be sent/received
+}));
 app.use((0, cookie_parser_1.default)());
 // init router
 app.use("/", index_1.default);
