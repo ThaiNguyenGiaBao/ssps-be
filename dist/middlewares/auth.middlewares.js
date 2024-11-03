@@ -18,11 +18,11 @@ const errorRespone_1 = require("../helper/errorRespone");
 const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.cookies.token;
     if (!token) {
-        throw new errorRespone_1.UnauthorizedError("Unauthorized");
+        throw new errorRespone_1.UnauthorizedError("No token provided");
     }
     jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || "secret", (err, member) => __awaiter(void 0, void 0, void 0, function* () {
         if (err) {
-            throw new errorRespone_1.UnauthorizedError("Unauthorized");
+            throw new errorRespone_1.UnauthorizedError("Invalid token");
         }
         req.user = member;
         console.log("User authenticated::", req.user);

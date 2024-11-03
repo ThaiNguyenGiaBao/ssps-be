@@ -22,7 +22,8 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)({
     origin: true, // This is a security issue, allowing all origins
-    credentials: true // This allows cookies to be sent/received
+    credentials: true, // This allows cookies to be sent/received
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] // Allow OPTIONS for preflight
 }));
 app.use((0, cookie_parser_1.default)());
 // init router
