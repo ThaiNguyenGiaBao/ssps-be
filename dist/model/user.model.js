@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
 class AccessModel {
     static findUserByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -26,6 +27,58 @@ class AccessModel {
             const newUserResult = yield initDatabase_1.default.query(`INSERT INTO users (email, name, password, avatarUrl) 
              VALUES ($1, $2, $3, $4) RETURNING *`, [email, username, hashedPassword, avatarUrl]);
             return newUserResult.rows[0];
+        });
+    }
+    static findUserById(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield initDatabase_1.default.query("SELECT * FROM users WHERE id = $1", [userId]);
+            return user.rows[0];
+        });
+    }
+    static updateUser(userId, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updates = [];
+            const values = [];
+            const { email, username, password, avatarUrl, coinBalance } = data;
+            if (email !== undefined) {
+                updates.push(`email = $${updates.length + 1}`);
+                values.push(email);
+            }
+            if (username !== undefined) {
+                updates.push(`name = $${updates.length + 1}`);
+                values.push(username);
+            }
+            if (password !== undefined) {
+                updates.push(`password = $${updates.length + 1}`);
+                const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+                values.push(hashedPassword);
+            }
+            if (avatarUrl !== undefined) {
+                updates.push(`avatarUrl = $${updates.length + 1}`);
+                values.push(avatarUrl);
+            }
+            if (coinBalance !== undefined) {
+                updates.push(`coinBalance = $${updates.length + 1}`);
+                values.push(coinBalance);
+            }
+            const updateQuery = `
+            UPDATE users
+            SET ${updates.join(", ")}
+            WHERE id = $${updates.length + 1} RETURNING *
+        `;
+            values.push(userId);
+            const updatedUserResult = yield initDatabase_1.default.query(updateQuery, values);
+            const updatedUser = updatedUserResult.rows[0];
+            console.log("Updated user", updatedUser);
+            return updatedUser;
+        });
+    }
+    static deleteUser(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const deleteQuery = "DELETE FROM users WHERE id = $1 RETURNING *";
+            const deletedUserResult = yield initDatabase_1.default.query(deleteQuery, [userId]);
+            const deletedUser = deletedUserResult.rows[0];
+            return deletedUser;
         });
     }
 }

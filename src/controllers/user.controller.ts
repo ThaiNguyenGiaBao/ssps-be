@@ -7,7 +7,14 @@ class UserController {
     //router.get("/:userId", asyncHandler(UserController.getUser));
     static async getUser(req: Request, res: Response) {
         console.log("GetUserProfile::", req.params);
-        if (req.user.id != req.params.userId) {
+        if (req.params.userId == "me") {
+            return new Created({
+                message: "Get user profile successfully",
+                data: await UserService.getUser(req.user.id)
+            }).send(res);
+        }
+
+        if (req.user.id != req.params.userId && req.user.role != "admin") {
             throw new ForbiddenError("You are not allowed to access this resource");
         }
         return new Created({

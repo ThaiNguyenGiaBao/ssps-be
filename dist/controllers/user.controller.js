@@ -20,7 +20,13 @@ class UserController {
     static getUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("GetUserProfile::", req.params);
-            if (req.user.id != req.params.userId) {
+            if (req.params.userId == "me") {
+                return new successResponse_1.Created({
+                    message: "Get user profile successfully",
+                    data: yield user_service_1.default.getUser(req.user.id)
+                }).send(res);
+            }
+            if (req.user.id != req.params.userId && req.user.role != "admin") {
                 throw new errorRespone_1.ForbiddenError("You are not allowed to access this resource");
             }
             return new successResponse_1.Created({
