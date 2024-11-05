@@ -17,5 +17,7 @@ router.get("/page", asyncHandler(ConfigController.getPageConfig))
 router.post("/filetype", asyncHandler(ConfigController.addPermitedFile));
 router.patch("/filetype/:type", asyncHandler(ConfigController.updatePermitedFile));
 router.delete("/filetype/:type", asyncHandler(ConfigController.deletePermitedFile));  
+// Update given page settings
+router.patch("/page", asyncHandler(ConfigController.updatePageConfig));
 
 export default router;

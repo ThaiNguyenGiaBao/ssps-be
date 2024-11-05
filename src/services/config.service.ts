@@ -1,5 +1,5 @@
 import { BadRequestError, NotFoundError } from "../helper/errorRespone";
-import ConfigModel, { Config } from "../model/config.model";
+import ConfigModel, { Config } from "../model/page.model";
 import PermitedFileModel, { PermitedFile } from "../model/permitedFile.model";
 
 export class ConfigService {
@@ -41,10 +41,21 @@ export class ConfigService {
   }
 
   static async getPageConfig(): Promise<Config> {
-    const config: Config | null = await ConfigModel.getConfig();
+    const config: Config | null = await ConfigModel.getPageConfig();
     if (config === null) {
       throw new NotFoundError("Configuration not found!");
     }
     return config;
+  }
+
+  static async updatePageConfig(data: Partial<Config>): Promise<Config> {
+    if (!data.dateGivenPage && !data.defaultNumPage) 
+      throw new BadRequestError("'dateGivenPage' or 'defaultNumPage' must be given.");
+    if (data.dateGivenPage && (data.dateGivenPage >= 31 || data.dateGivenPage <= 0))
+      throw new BadRequestError("dateGivenPage must be from 1 to 30.");
+    const result = await ConfigModel.updatePageConfig(data);
+    if (result === null) 
+      throw new BadRequestError("Update unsuccessfully");
+    return result;
   }
 }

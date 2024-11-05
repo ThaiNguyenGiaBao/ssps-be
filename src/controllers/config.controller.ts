@@ -2,7 +2,7 @@ import { Request, Response  } from "express";
 import { ConfigService } from "../services/config.service";
 import { OK } from "../helper/successResponse";
 import { PermitedFile } from "../model/permitedFile.model";
-import { Config } from "../model/config.model";
+import { Config } from "../model/page.model";
 import { NotFoundError } from "../helper/errorRespone";
 
 
@@ -47,10 +47,17 @@ class ConfigController {
     }).send(res);
   }
   static async getPageConfig(req: Request, res: Response) {
-    const result = await ConfigService.getPermitedFile();
+    const result = await ConfigService.getPageConfig();
     return new OK({
       data: result,
       message: "Get permited file types successfully!"
+    }).send(res);
+  }
+  static async updatePageConfig(req: Request, res: Response) {
+    const result = await ConfigService.updatePageConfig(req.body);
+    return new OK({
+      data: result,
+      message: "Update page config successfully."
     }).send(res);
   }
 };

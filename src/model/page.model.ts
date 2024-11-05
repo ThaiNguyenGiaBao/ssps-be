@@ -3,15 +3,15 @@ import { BadRequestError } from "../helper/errorRespone";
 
 export interface Config {
   defaultNumPage: number,
-  dateGivenPage: string
+  dateGivenPage: number
 }
 
 export default class ConfigModel {
-  static async getConfig(): Promise<Config | null> {
+  static async getPageConfig(): Promise<Config | null> {
     const result = await db.query("SELECT defaultNumPage, dateGivenPage FROM configuration;");
     return result.rows[0] || null;
   }
-  static async updateConfig({ defaultNumPage , dateGivenPage }: Partial<Config>): Promise<Config | null> {
+  static async updatePageConfig({ defaultNumPage , dateGivenPage }: Partial<Config>): Promise<Config | null> {
     // Initialize an array to store the SQL set clauses and the values
     const setClauses: string[] = [];
     const values: (number | string)[] = [];
@@ -33,9 +33,9 @@ export default class ConfigModel {
 
     const result = await db.query(`
       UPDATE configuration
-      SET defaultNumPage = $1, dateGivenPage = $2
+      SET ${setClauses}
       WHERE id = 1
-      RETURNING *;`, [defaultNumPage, dateGivenPage]);
+      RETURNING *;`, [...values]);
     return result.rows[0] || null;
   }
 }
