@@ -7,6 +7,7 @@ export class ConfigService {
     const permitedFiles: PermitedFile[] = await PermitedFileModel.findAllPermitedFiles();
     return permitedFiles
   }
+
   static async addPermitedFile(permitedFile: PermitedFile): Promise<PermitedFile> {
     if (permitedFile.type === undefined) {
       throw new BadRequestError("Permited File Type must be neither null nor undefined")
@@ -17,6 +18,7 @@ export class ConfigService {
     }
     return result;
   } 
+
   static async updatePermitedFile(type: string, data: Partial<PermitedFile>) {
     if (!type) 
       throw new BadRequestError("File type is required.");
@@ -49,10 +51,11 @@ export class ConfigService {
   }
 
   static async updatePageConfig(data: Partial<Config>): Promise<Config> {
-    if (!data.dateGivenPage && !data.defaultNumPage) 
+    if (data.dateGivenPage === undefined && data.defaultNumPage === undefined) 
       throw new BadRequestError("'dateGivenPage' or 'defaultNumPage' must be given.");
     if (data.dateGivenPage && (data.dateGivenPage >= 31 || data.dateGivenPage <= 0))
       throw new BadRequestError("dateGivenPage must be from 1 to 30.");
+
     const result = await ConfigModel.updatePageConfig(data);
     if (result === null) 
       throw new BadRequestError("Update unsuccessfully");

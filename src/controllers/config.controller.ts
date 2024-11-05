@@ -18,6 +18,7 @@ class ConfigController {
       message: "Get configuration successfully!"
     }).send(res);
   }
+
   static async getPermitedFile(req: Request, res: Response) {
     const result = await ConfigService.getPermitedFile();
     return new OK({
@@ -25,6 +26,7 @@ class ConfigController {
       message: "Get permited file types successfully!"
     }).send(res);
   }
+
   static async addPermitedFile(req: Request, res: Response) {
     const result = await ConfigService.addPermitedFile(req.body);
     return new OK({
@@ -32,6 +34,7 @@ class ConfigController {
       message: "Add permited file type successfully"
     }).send(res);
   }
+
   static async updatePermitedFile(req: Request, res: Response) {
     const result = await ConfigService.updatePermitedFile(req.params.type, req.body);
     return new OK({
@@ -39,6 +42,7 @@ class ConfigController {
       message: "Permited file updated successfully!"
     }).send(res);
   } 
+
   static async deletePermitedFile(req: Request, res: Response) {
     const result = await ConfigService.deletePermitedFile(req.params.type);
     return new OK({
@@ -46,6 +50,7 @@ class ConfigController {
       message: "Delete permited file type successfully!"
     }).send(res);
   }
+
   static async getPageConfig(req: Request, res: Response) {
     const result = await ConfigService.getPageConfig();
     return new OK({
@@ -53,6 +58,7 @@ class ConfigController {
       message: "Get permited file types successfully!"
     }).send(res);
   }
+  
   static async updatePageConfig(req: Request, res: Response) {
     const result = await ConfigService.updatePageConfig(req.body);
     return new OK({
