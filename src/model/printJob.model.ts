@@ -8,34 +8,52 @@ class PrintingJobModel {
         return printJob.rows[0];
     }
 
-    static async getPrintJobByUser({userId, startDate, endDate}: {userId: string, startDate: string, endDate: string}) {
-        let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "'";
-        if(startDate != null) query_string += " AND starttime>='"+ startDate + "'";
-        if(endDate != null) query_string += " AND starttime<='"+ endDate + "'";
+    static async getPrintJobByUser({userId, startDate, endDate, PageNum, itemPerPage}: 
+                                   {userId: string, startDate: string, endDate: string, PageNum: number, itemPerPage: number}) {
 
+        let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' ";
+        if(startDate != null) query_string += " AND starttime>='"+ startDate + "' ";
+        if(endDate != null) query_string += " AND starttime<='"+ endDate + "' ";
+        
+        query_string += "ORDER BY starttime DESC ";
+        if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+            query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
+        
         const allPrintJob = await db.query(query_string);
         return allPrintJob.rows;
     }
 
-    static async getPrintJobByPrinter({printerId, startDate, endDate}: {printerId: string, startDate: string, endDate: string}) {
-        let query_string = "SELECT * FROM printingjob WHERE printerid::text = '" + printerId + "'";
+    static async getPrintJobByPrinter({printerId, startDate, endDate, PageNum, itemPerPage}: 
+                                      {printerId: string, startDate: string, endDate: string, PageNum: number, itemPerPage: number}) {
+
+        let query_string = "SELECT * FROM printingjob WHERE printerid::text = '" + printerId + "' ";
         if(startDate != null) query_string += " AND starttime >= '"+ startDate + "' ";
         if(endDate != null) query_string += " AND starttime <= '"+ endDate + "' ";
 
+        query_string += "ORDER BY starttime DESC ";
+        if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+            query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
+
         const allPrintJob = await db.query(query_string);
         return allPrintJob.rows;
     }
 
-    static async getPrintJobByUserAndPrinter({userId, printerId, startDate, endDate}: {userId: string, printerId: string, startDate: string, endDate: string}) {
-        let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' AND printerid::text = '" +  printerId + "'";
+    static async getPrintJobByUserAndPrinter({userId, printerId, startDate, endDate, PageNum, itemPerPage}: 
+                                             {userId: string, printerId: string, startDate: string, endDate: string, PageNum: number, itemPerPage: number}) {
+
+        let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' AND printerid::text = '" +  printerId + "' ";
         if(startDate != null) query_string += " AND starttime >= '"+ startDate + "' ";
         if(endDate != null) query_string += " AND starttime <= '"+ endDate + "' ";
 
+        query_string += "ORDER BY starttime DESC ";
+        if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+            query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
+
         const allPrintJob = await db.query(query_string);
         return allPrintJob.rows;
     }
 
-    static async getPrintJobByDuration({startDate, endDate}: {startDate: string, endDate: string}) {
+    static async getPrintJobByDuration({startDate, endDate, PageNum, itemPerPage}: {startDate: string, endDate: string, PageNum: number, itemPerPage: number}) {
         let query_string = "SELECT * FROM printingjob";
         if(startDate != null) {
             query_string += " WHERE starttime >= '"+ startDate + "' ";
@@ -43,6 +61,10 @@ class PrintingJobModel {
         }
         else if(endDate != null) query_string += " WHERE starttime <= '"+ endDate + "' ";
 
+        query_string += "ORDER BY starttime DESC ";
+        if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+            query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
+        
         const allPrintJob = await db.query(query_string);
         return allPrintJob.rows;
     }
