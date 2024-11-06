@@ -6,6 +6,7 @@ import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 class ReportService {
     static async createReport({name, type, description, reportDate}: 
                             {name: string, type: string, description: string, reportDate: string}) {
+                                
         if(name == null) throw new BadRequestError("Name is null (generating report)");
         if(type == null) throw new BadRequestError("Type is null (generating report)");
 
@@ -97,8 +98,6 @@ class ReportService {
 
         return {deletedReport: deletedReport, deletedEvents: deletedEvent};
     }
-
-
 }
 
 export default ReportService;

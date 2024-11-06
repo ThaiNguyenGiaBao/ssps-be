@@ -11,9 +11,10 @@ router.post("/generateMonthlyReport", asyncHandler(ReportController.generateMont
 router.post("/generateYearlyReport", asyncHandler(ReportController.generateYearlyReport)); 
 router.post("/addEvent", asyncHandler(ReportController.addEvent)); // Not really necessary
 
-router.get("/", asyncHandler(ReportController.getAllReport)); 
 // router.get("/event", asyncHandler(ReportController.getReportById));
 // router.get("/event/:eventId", asyncHandler(ReportController.getReportById));
+
+router.get("/", asyncHandler(ReportController.getAllReport));  // get all report from date X to Y
 router.get("/:reportId", asyncHandler(ReportController.getReportById));
 
 // router.delete("/event/:eventId", asyncHandler(ReportController.deleteEvent));
