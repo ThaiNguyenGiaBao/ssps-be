@@ -11,7 +11,7 @@ router.get("/", asyncHandler(ConfigController.getConfigSettings));
 router.get("/filetype", asyncHandler(ConfigController.getPermitedFile));
 router.get("/page", asyncHandler(ConfigController.getPageConfig))
 
-// router.use(asyncHandler(authenticateToken));
+router.use(asyncHandler(authenticateToken));
 
 // Set Filetype config
 router.post("/filetype", asyncHandler(ConfigController.addPermitedFile));
