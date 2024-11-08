@@ -1,8 +1,6 @@
 import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "../helper/errorRespone";
 
-import PrintingService from "../services/printer.service";
-import { Request, Response } from "express";
-import { OK, Created } from "../helper/successResponse";
+
 import { Printer } from "../model/printer.model";
 import PrinterModel from "../model/printer.model";
 

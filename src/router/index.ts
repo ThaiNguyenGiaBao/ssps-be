@@ -1,7 +1,7 @@
 import express from "express";
 import { Request, Response } from "express";
 import AccessRouter from "./access";
-import PrintingRouter from "./printing";
+import PrintingRouter from "./printJob";
 import UserRouter from "./user";
 import FileRouter from "./file";
 import PrinterRouter from "./printer";
@@ -13,7 +13,7 @@ router.get("/", (req: Request, res: Response) => {
 });
 router.use("/api/auth", AccessRouter);
 
-router.use("/api/printing", PrintingRouter);
+router.use("/api/printjob", PrintingRouter);
 
 router.use("/api/user", UserRouter);
 

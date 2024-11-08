@@ -1,8 +1,12 @@
-import dotenv from "dotenv";
-import { initializeApp } from "firebase/app";
-import { getStorage } from "firebase/storage";
-dotenv.config();
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = __importDefault(require("dotenv"));
+const app_1 = require("firebase/app");
+const storage_1 = require("firebase/storage");
+dotenv_1.default.config();
 // Firebase configuration using environment variables
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -13,15 +17,14 @@ const firebaseConfig = {
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
-
 // Initialize Firebase with try-catch
-let storage: any;
+let storage;
 try {
-    const firebaseApp = initializeApp(firebaseConfig);
-    storage = getStorage(firebaseApp);
+    const firebaseApp = (0, app_1.initializeApp)(firebaseConfig);
+    storage = (0, storage_1.getStorage)(firebaseApp);
     console.log("Firebase connected successfully.");
-} catch (error) {
+}
+catch (error) {
     console.error("Failed to connect to Firebase:", error);
 }
-
-export default storage;
+exports.default = storage;

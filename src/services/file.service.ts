@@ -2,6 +2,7 @@ import { BadRequestError, ForbiddenError, NotFoundError } from "../helper/errorR
 import db from "../dbs/initDatabase";
 import uploadFile from "../utils/uploadFile";
 import { FileObject } from "../utils/uploadFile";
+import FileModel from "../model/file.model";
 class FileService {
     // router.post("/upload", upload.single("file"), asyncHandler(FileController.uploadFile));
     static async uploadFile(userId: string, file: FileObject) {
@@ -14,38 +15,50 @@ class FileService {
             mimetype: file.mimetype
         });
 
-        // Save into database
-        const newFile = await db.query("INSERT INTO file (filename, url, userId, type) VALUES ($1,$2, $3, $4) RETURNING *", [
+        const newFile = await FileModel.createFile({
             uniqueFilename,
             downloadURL,
             userId,
-            file.mimetype
-        ]);
-        return newFile.rows[0];
+            file
+        });
+        return newFile;
     }
     //router.get("/", asyncHandler(FileController.getAllFiles));
     static async getAllFiles() {
-        const files = await db.query("SELECT * FROM file");
-        return files.rows;
+        return await FileModel.getAllFiles();
     }
 
     // router.get("/:userId", asyncHandler(FileController.getFile));
     static async getFileByUserId(userId: string) {
-        const file = await db.query("SELECT * FROM file WHERE userId = $1", [userId]);
-        return file.rows;
+        if (!userId) {
+            throw new BadRequestError("User Id is required");
+        }
+        const file = await FileModel.getFileByUserId(userId);
+
+        if (file.length === 0) {
+            throw new NotFoundError("File not found");
+        }
+        return file;
     }
 
     // router.delete("/delete", asyncHandler(FileController.deleteFile));
-    static async deleteFile(fileId: string) {
+    static async deleteFile({ userId, fileId }: { userId: string; fileId: string }) {
+        if (!userId) {
+            throw new BadRequestError("User Id is required");
+        }
         if (!fileId) {
             throw new BadRequestError("File Id is required");
         }
 
-        const file = await db.query("DELETE FROM file WHERE id = $1 RETURNING *", [fileId]);
-        if (file.rows.length === 0) {
+        const file = await FileModel.getFileById(fileId);
+
+        if (!file) {
             throw new NotFoundError("File not found");
         }
-        return file.rows[0];
+
+        
+
+        return await FileModel.deleteFile(fileId);
     }
 }
 
