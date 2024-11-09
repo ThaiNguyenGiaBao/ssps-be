@@ -92,13 +92,6 @@ class PrintJobController {
             description: req.body.printJobId 
         })
 
-
-        ReportService.createEvent({
-            userId: req.user.id,
-            type: "print document",
-            description: req.body.printJobId 
-        })
-
         PrintJobService.updateStatus({
             printJobId: req.body.printJobId,
             newStatus: "success"
