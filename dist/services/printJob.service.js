@@ -35,7 +35,7 @@ class PrintingJobService {
         });
     }
     static getPrintingHistoryByUserAndPrinter(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ userId, printerId, startDate, endDate }) {
+        return __awaiter(this, arguments, void 0, function* ({ userId, printerId, startDate, endDate, PageNum, itemPerPage }) {
             if (userId == null)
                 throw new errorRespone_1.BadRequestError("userId is null");
             if (printerId == null)
@@ -46,36 +46,72 @@ class PrintingJobService {
                 if (checkStartDate || checkEndDate)
                     throw new errorRespone_1.BadRequestError("Date format is wrong");
             }
+            if (!Number.isInteger(PageNum) || PageNum < 0)
+                throw new errorRespone_1.BadRequestError("Pagination: displayPage is invalid");
+            if (!Number.isInteger(itemPerPage) || itemPerPage < 0)
+                throw new errorRespone_1.BadRequestError("Pagination: itemPerPage is invalid");
+            let result;
             if (userId != "none")
                 yield user_service_1.default.getUser(userId); // Check if user's exist
             if (userId != "none" && printerId != "none") {
-                return yield printJob_model_1.default.getPrintJobByUserAndPrinter({
+                result = yield printJob_model_1.default.getPrintJobByUserAndPrinter({
                     userId: userId,
                     printerId: printerId,
                     startDate: startDate,
-                    endDate: endDate
+                    endDate: endDate,
+                    PageNum: PageNum,
+                    itemPerPage: itemPerPage
                 });
             }
             else if (userId != "none") {
-                return yield printJob_model_1.default.getPrintJobByUser({
+                result = yield printJob_model_1.default.getPrintJobByUser({
                     userId: userId,
                     startDate: startDate,
-                    endDate: endDate
+                    endDate: endDate,
+                    PageNum: PageNum,
+                    itemPerPage: itemPerPage
                 });
             }
             else if (printerId != "none") {
-                return yield printJob_model_1.default.getPrintJobByPrinter({
+                result = yield printJob_model_1.default.getPrintJobByPrinter({
                     printerId: printerId,
                     startDate: startDate,
-                    endDate: endDate
+                    endDate: endDate,
+                    PageNum: PageNum,
+                    itemPerPage: itemPerPage
                 });
             }
             else {
-                return yield printJob_model_1.default.getPrintJobByDuration({
+                result = yield printJob_model_1.default.getPrintJobByDuration({
                     startDate: startDate,
-                    endDate: endDate
+                    endDate: endDate,
+                    PageNum: PageNum,
+                    itemPerPage: itemPerPage
                 });
             }
+            let numItem = result.length;
+            let totalPage = 0;
+            let prices = [];
+            for (let i in result) {
+                let printJob = result[i];
+                prices.push(yield PrintingJobService.CalculatePrice({
+                    papersize: printJob.papersize,
+                    colortype: printJob.colortype,
+                    numpage: printJob.numpage,
+                    numside: printJob.numside,
+                    pagepersheet: printJob.pagepersheet,
+                    numcopy: printJob.numcopy
+                }));
+                if (printJob.status != "success")
+                    continue;
+                totalPage += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+            }
+            return {
+                printjob: result,
+                totalItem: numItem,
+                totalPage: totalPage,
+                prices: prices
+            };
         });
     }
     static savePrintJob(_a) {
@@ -114,26 +150,30 @@ class PrintingJobService {
             if (papersize == null || numpage <= 0 || numpage == null || (numside != 1 && numside != 2) ||
                 numcopy <= 0 || numcopy == null || pagepersheet <= 0 || pagepersheet == null ||
                 colortype == null)
-                throw new errorRespone_1.BadRequestError("Invalid parameter for saving CalculatePrice");
+                throw new errorRespone_1.BadRequestError("Invalid parameter for CalculatePrice");
             let base_coin = 1;
-            if (papersize == "A4")
+            if (papersize == "A5")
+                base_coin = 1;
+            else if (papersize == "A4")
                 base_coin = 2;
-            if (papersize == "A3")
+            else if (papersize == "A3")
                 base_coin = 4;
-            if (papersize == "A2")
+            else if (papersize == "A2")
                 base_coin = 8;
-            if (papersize == "A1")
+            else if (papersize == "A1")
                 base_coin = 16;
+            else
+                throw new errorRespone_1.BadRequestError("Invalid paper size (A1-A5 only)!");
             let color_price = 1;
-            if (colortype != "Grayscale")
+            if (colortype.toLowerCase() != "grayscale")
                 color_price = 2;
             return Math.ceil(numpage / (numside * pagepersheet)) * numcopy * base_coin * color_price;
         });
     }
     static CalculateTotalPage(_a) {
         return __awaiter(this, arguments, void 0, function* ({ userId, paperSize, startDate, endDate }) {
-            if (paperSize == null || userId == null)
-                throw new errorRespone_1.BadRequestError("Invalid parameter for saving CalculatePrice");
+            if (userId == null)
+                throw new errorRespone_1.BadRequestError("Invalid parameter for CalculateTotalPage");
             if (startDate != null && endDate != null) {
                 let checkStartDate = isNaN(Date.parse(startDate));
                 let checkEndDate = isNaN(Date.parse(endDate));
@@ -144,14 +184,16 @@ class PrintingJobService {
             let allPrintjob = yield printJob_model_1.default.getPrintJobByUser({
                 userId: userId,
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
+                PageNum: 0,
+                itemPerPage: 10
             });
             let total_page = 0;
             for (let i in allPrintjob) {
                 let printJob = allPrintjob[i];
                 if (printJob.status != "success")
                     continue;
-                if (printJob.papersize != paperSize && paperSize != "none")
+                if (printJob.papersize != paperSize && paperSize != null)
                     continue;
                 total_page += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
             }
@@ -168,7 +210,9 @@ class PrintingJobService {
             }
             let allPrintjob = yield printJob_model_1.default.getPrintJobByDuration({
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
+                PageNum: 0,
+                itemPerPage: 100
             });
             let user = new Set();
             for (let i in allPrintjob)

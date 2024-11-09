@@ -35,6 +35,20 @@ class UserController {
             }).send(res);
         });
     }
+    static getAllUsers(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("GetAllUsers::", req.query);
+            const page = req.query.page ? parseInt(req.query.page) : 1;
+            const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("You are not allowed to get all users");
+            }
+            return new successResponse_1.OK({
+                message: "Get all users successfully",
+                data: yield user_service_1.default.getAllUsers({ page, limit })
+            }).send(res);
+        });
+    }
     // router.patch("/:userId", asyncHandler(UserController.updateUser));
     static updateUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

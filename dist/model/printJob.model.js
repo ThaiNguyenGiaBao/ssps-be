@@ -24,40 +24,49 @@ class PrintingJobModel {
         });
     }
     static getPrintJobByUser(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ userId, startDate, endDate }) {
-            let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "'";
+        return __awaiter(this, arguments, void 0, function* ({ userId, startDate, endDate, PageNum, itemPerPage }) {
+            let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' ";
             if (startDate != null)
-                query_string += " AND starttime>='" + startDate + "'";
+                query_string += " AND starttime>='" + startDate + "' ";
             if (endDate != null)
-                query_string += " AND starttime<='" + endDate + "'";
+                query_string += " AND starttime<='" + endDate + "' ";
+            query_string += "ORDER BY starttime DESC ";
+            if (Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0)
+                query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
             const allPrintJob = yield initDatabase_1.default.query(query_string);
             return allPrintJob.rows;
         });
     }
     static getPrintJobByPrinter(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ printerId, startDate, endDate }) {
-            let query_string = "SELECT * FROM printingjob WHERE printerid::text = '" + printerId + "'";
+        return __awaiter(this, arguments, void 0, function* ({ printerId, startDate, endDate, PageNum, itemPerPage }) {
+            let query_string = "SELECT * FROM printingjob WHERE printerid::text = '" + printerId + "' ";
             if (startDate != null)
                 query_string += " AND starttime >= '" + startDate + "' ";
             if (endDate != null)
                 query_string += " AND starttime <= '" + endDate + "' ";
+            query_string += "ORDER BY starttime DESC ";
+            if (Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0)
+                query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
             const allPrintJob = yield initDatabase_1.default.query(query_string);
             return allPrintJob.rows;
         });
     }
     static getPrintJobByUserAndPrinter(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ userId, printerId, startDate, endDate }) {
-            let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' AND printerid::text = '" + printerId + "'";
+        return __awaiter(this, arguments, void 0, function* ({ userId, printerId, startDate, endDate, PageNum, itemPerPage }) {
+            let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' AND printerid::text = '" + printerId + "' ";
             if (startDate != null)
                 query_string += " AND starttime >= '" + startDate + "' ";
             if (endDate != null)
                 query_string += " AND starttime <= '" + endDate + "' ";
+            query_string += "ORDER BY starttime DESC ";
+            if (Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0)
+                query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
             const allPrintJob = yield initDatabase_1.default.query(query_string);
             return allPrintJob.rows;
         });
     }
     static getPrintJobByDuration(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate }) {
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, PageNum, itemPerPage }) {
             let query_string = "SELECT * FROM printingjob";
             if (startDate != null) {
                 query_string += " WHERE starttime >= '" + startDate + "' ";
@@ -66,6 +75,9 @@ class PrintingJobModel {
             }
             else if (endDate != null)
                 query_string += " WHERE starttime <= '" + endDate + "' ";
+            query_string += "ORDER BY starttime DESC ";
+            if (Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0)
+                query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
             const allPrintJob = yield initDatabase_1.default.query(query_string);
             return allPrintJob.rows;
         });

@@ -31,6 +31,12 @@ class UserService {
             return user;
         });
     }
+    static getAllUsers(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ page, limit }) {
+            const users = yield user_model_1.default.getAllUsers({ page, limit });
+            return users;
+        });
+    }
     // // router.patch("/:userId", asyncHandler(UserController.updateUser));
     static updateUser(userId_1, _a) {
         return __awaiter(this, arguments, void 0, function* (userId, { email, username, password, avatarUrl, coinBalance }) {

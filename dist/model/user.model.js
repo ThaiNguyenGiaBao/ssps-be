@@ -18,7 +18,6 @@ class AccessModel {
     static findUserByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield initDatabase_1.default.query("SELECT * FROM users WHERE email = $1", [email]);
-            //console.log(user);
             return user.rows[0];
         });
     }
@@ -33,6 +32,12 @@ class AccessModel {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield initDatabase_1.default.query("SELECT * FROM users WHERE id = $1", [userId]);
             return user.rows[0];
+        });
+    }
+    static getAllUsers(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ page, limit }) {
+            const users = yield initDatabase_1.default.query("SELECT * FROM users LIMIT $1 OFFSET $2", [limit, (page - 1) * limit]);
+            return users.rows;
         });
     }
     static updateUser(userId, data) {

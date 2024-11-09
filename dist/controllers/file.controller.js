@@ -32,6 +32,18 @@ class FileController {
             }).send(res);
         });
     }
+    static getFileById(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("FileController::getFileById", req.params.fileId);
+            if (!req.user.id && req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Permission denied on getting file by id");
+            }
+            return new successResponse_1.OK({
+                message: "Get file successfully",
+                data: yield file_service_1.default.getFileById(req.user.id, req.params.fileId)
+            }).send(res);
+        });
+    }
     static deleteFile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("FileController::deleteFile", req.body);
@@ -51,14 +63,16 @@ class FileController {
             if (req.user.role != "admin") {
                 throw new errorRespone_1.ForbiddenError("Permission denied on getting all files");
             }
+            const page = req.query.page ? parseInt(req.query.page) : 1;
+            const limit = req.query.limit ? parseInt(req.query.limit) : 10;
             return new successResponse_1.OK({
                 message: "Get all files successfully",
-                data: yield file_service_1.default.getAllFiles()
+                data: yield file_service_1.default.getAllFiles({ page, limit })
             }).send(res);
         });
     }
     // router.get("/:userId", asyncHandler(FileController.getFile));
-    static getFile(req, res) {
+    static getFileByUserId(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("FileController::getFile", req.params.userId);
             if (req.user.id != req.params.userId && req.user.role != "admin") {

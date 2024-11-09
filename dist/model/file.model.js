@@ -25,9 +25,9 @@ class FileModel {
             return newFile.rows[0];
         });
     }
-    static getAllFiles() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const files = yield initDatabase_1.default.query("SELECT * FROM file");
+    static getAllFiles(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ page, limit }) {
+            const files = yield initDatabase_1.default.query("SELECT * FROM file LIMIT $1 OFFSET $2", [limit, (page - 1) * limit]);
             return files.rows;
         });
     }

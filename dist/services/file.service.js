@@ -36,9 +36,21 @@ class FileService {
         });
     }
     //router.get("/", asyncHandler(FileController.getAllFiles));
-    static getAllFiles() {
+    static getAllFiles(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ page, limit }) {
+            return yield file_model_1.default.getAllFiles({ page, limit });
+        });
+    }
+    static getFileById(userId, fileId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield file_model_1.default.getAllFiles();
+            if (!fileId) {
+                throw new errorRespone_1.BadRequestError("File Id is required");
+            }
+            const file = yield file_model_1.default.getFileById(fileId);
+            if (!file) {
+                throw new errorRespone_1.NotFoundError("File not found");
+            }
+            return file;
         });
     }
     // router.get("/:userId", asyncHandler(FileController.getFile));
