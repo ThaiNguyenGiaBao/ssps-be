@@ -22,6 +22,11 @@ class UserService {
         return user;
     }
 
+    static async getAllUsers({ page, limit }: { page: number; limit: number }) {
+        const users = await UserModel.getAllUsers({page, limit});
+        return users;
+    }
+
     // // router.patch("/:userId", asyncHandler(UserController.updateUser));
 
     static async updateUser(

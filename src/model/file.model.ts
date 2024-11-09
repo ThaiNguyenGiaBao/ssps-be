@@ -21,8 +21,8 @@ class FileModel {
         return newFile.rows[0];
     }
 
-    static async getAllFiles() {
-        const files = await db.query("SELECT * FROM file");
+    static async getAllFiles({ page, limit }: { page: number; limit: number }) {
+        const files = await db.query("SELECT * FROM file LIMIT $1 OFFSET $2", [limit, (page - 1) * limit]);
         return files.rows;
     }
 
@@ -40,8 +40,6 @@ class FileModel {
         const file = await db.query("SELECT * FROM file WHERE id = $1", [fileId]);
         return file.rows[0];
     }
-
-    
 }
 
 export default FileModel;

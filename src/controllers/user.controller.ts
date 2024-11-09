@@ -7,6 +7,7 @@ class UserController {
     //router.get("/:userId", asyncHandler(UserController.getUser));
     static async getUser(req: Request, res: Response) {
         console.log("GetUserProfile::", req.params);
+
         if (req.params.userId == "me") {
             return new Created({
                 message: "Get user profile successfully",
@@ -22,6 +23,20 @@ class UserController {
             data: await UserService.getUser(req.params.userId)
         }).send(res);
     }
+
+    static async getAllUsers(req: Request, res: Response) {
+        console.log("GetAllUsers::", req.query);
+        const page = req.query.page ? parseInt(req.query.page as string) : 1;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+        if (req.user.role != "admin") {
+            throw new ForbiddenError("You are not allowed to get all users");
+        }
+        return new OK({
+            message: "Get all users successfully",
+            data: await UserService.getAllUsers({ page, limit })
+        }).send(res);
+    }
+
     // router.patch("/:userId", asyncHandler(UserController.updateUser));
     static async updateUser(req: Request, res: Response) {
         console.log("UpdateUserProfile::", req.params, req.body);

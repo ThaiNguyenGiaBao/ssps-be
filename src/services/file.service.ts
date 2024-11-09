@@ -24,8 +24,20 @@ class FileService {
         return newFile;
     }
     //router.get("/", asyncHandler(FileController.getAllFiles));
-    static async getAllFiles() {
-        return await FileModel.getAllFiles();
+    static async getAllFiles({ page, limit }: { page: number; limit: number }) {
+        return await FileModel.getAllFiles({ page, limit });
+    }
+
+    static async getFileById(userId: string, fileId: string) {
+        if (!fileId) {
+            throw new BadRequestError("File Id is required");
+        }
+        const file = await FileModel.getFileById(fileId);
+
+        if (!file) {
+            throw new NotFoundError("File not found");
+        }
+        return file;
     }
 
     // router.get("/:userId", asyncHandler(FileController.getFile));
@@ -55,8 +67,6 @@ class FileService {
         if (!file) {
             throw new NotFoundError("File not found");
         }
-
-        
 
         return await FileModel.deleteFile(fileId);
     }

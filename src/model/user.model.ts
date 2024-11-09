@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 class AccessModel {
     static async findUserByEmail(email: string) {
         const user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
-        //console.log(user);
         return user.rows[0];
     }
     static async createUser({
@@ -28,6 +27,12 @@ class AccessModel {
         const user = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
         return user.rows[0];
     }
+
+    static async getAllUsers({ page, limit }: { page: number; limit: number }) {
+        const users = await db.query("SELECT * FROM users LIMIT $1 OFFSET $2", [limit, (page - 1) * limit]);
+        return users.rows;
+    }
+
     static async updateUser(
         userId: string,
         data: Partial<{ email: string; username: string; password: string; avatarUrl: string; coinBalance: number }>

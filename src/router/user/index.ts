@@ -7,6 +7,7 @@ const router = express.Router();
 router.use(asyncHandler(authenticateToken));
 
 router.get("/:userId", asyncHandler(UserController.getUser));
+router.get("/", asyncHandler(UserController.getAllUsers));
 router.patch("/:userId", asyncHandler(UserController.updateUser));
 router.delete("/:userId", asyncHandler(UserController.deleteUser));
 
