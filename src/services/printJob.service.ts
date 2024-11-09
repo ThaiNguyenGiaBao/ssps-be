@@ -32,14 +32,15 @@ class PrintingJobService {
         }
 
         if(!Number.isInteger(PageNum) || PageNum < 0) 
-            throw new BadRequestError("Pagination: PageNum is invalid");
+            throw new BadRequestError("Pagination: displayPage is invalid");
         
         if(!Number.isInteger(itemPerPage) || itemPerPage < 0)
             throw new BadRequestError("Pagination: itemPerPage is invalid");
 
+        let result;
         if(userId != "none") await UserService.getUser(userId); // Check if user's exist
         if(userId != "none" && printerId != "none") {
-            return await PrintJobModel.getPrintJobByUserAndPrinter({
+            result = await PrintJobModel.getPrintJobByUserAndPrinter({
                 userId:     userId, 
                 printerId:  printerId, 
                 startDate:  startDate, 
@@ -49,7 +50,7 @@ class PrintingJobService {
             });
         }
         else if(userId != "none") {
-            return await PrintJobModel.getPrintJobByUser({
+            result = await PrintJobModel.getPrintJobByUser({
                 userId:     userId, 
                 startDate:  startDate, 
                 endDate:    endDate,
@@ -58,7 +59,7 @@ class PrintingJobService {
             });
         }
         else if(printerId != "none") {
-            return await PrintJobModel.getPrintJobByPrinter({
+            result = await PrintJobModel.getPrintJobByPrinter({
                 printerId:  printerId, 
                 startDate:  startDate, 
                 endDate:    endDate,
@@ -67,12 +68,36 @@ class PrintingJobService {
             });
         }
         else {
-            return await PrintJobModel.getPrintJobByDuration({
+            result = await PrintJobModel.getPrintJobByDuration({
                 startDate:  startDate, 
                 endDate:    endDate,
                 PageNum:    PageNum,
                 itemPerPage: itemPerPage
             });
+        }
+
+        let numItem = result.length;
+        let totalPage = 0;
+        let prices = [];
+        for (let i in result) {
+            let printJob = result[i];
+            prices.push(await PrintingJobService.CalculatePrice({
+                papersize: printJob.papersize,
+                colortype: printJob.colortype,
+                numpage: printJob.numpage,
+                numside: printJob.numside,
+                pagepersheet: printJob.pagepersheet,
+                numcopy: printJob.numcopy
+            }));
+            if (printJob.status != "success") continue;
+            totalPage += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+        }
+
+        return {
+            printjob: result,
+            totalItem: numItem,
+            totalPage: totalPage,
+            prices: prices
         }
     }
 
@@ -135,13 +160,15 @@ class PrintingJobService {
         ) throw new BadRequestError("Invalid parameter for CalculatePrice");
         
         let base_coin = 1;
-        if (papersize == "A4") base_coin = 2;
-        if (papersize == "A3") base_coin = 4;
-        if (papersize == "A2") base_coin = 8;
-        if (papersize == "A1") base_coin = 16;
+        if (papersize == "A5") base_coin = 1;
+        else if (papersize == "A4") base_coin = 2;
+        else if (papersize == "A3") base_coin = 4;
+        else if (papersize == "A2") base_coin = 8;
+        else if (papersize == "A1") base_coin = 16;
+        else throw new BadRequestError("Invalid paper size (A1-A5 only)!");
 
         let color_price = 1;
-        if (colortype != "Grayscale") color_price = 2;
+        if (colortype.toLowerCase() != "grayscale") color_price = 2;
 
         return Math.ceil(numpage / (numside * pagepersheet)) * numcopy * base_coin * color_price;
     }
