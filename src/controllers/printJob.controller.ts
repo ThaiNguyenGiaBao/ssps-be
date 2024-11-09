@@ -100,6 +100,9 @@ class PrintJobController {
         console.log("PrintJobController::getAllPrintingHistory", req.query);
         if(req.user.role == "user") throw new ForbiddenError("Permission denied on getting history of other user");
 
+        if(req.query.displayPage == null) req.query.displayPage = '0';
+        if(req.query.itemPerPage == null) req.query.itemPerPage = '0';
+
         return new OK({
             message: "All history",
             data: await PrintJobService.getPrintingHistoryByUserAndPrinter({
@@ -107,6 +110,8 @@ class PrintJobController {
                 printerId:  "none",
                 startDate:  req.query.startDate as string,
                 endDate:    req.query.endDate as string, 
+                PageNum:    parseInt(req.query.displayPage as string),
+                itemPerPage: parseInt(req.query.itemPerPage as string)
             })
         }).send(res);
     }
@@ -119,6 +124,9 @@ class PrintJobController {
             throw new ForbiddenError("Permission denied on getting history of other user");
         }
 
+        if(req.query.displayPage == null) req.query.displayPage = '0';
+        if(req.query.itemPerPage == null) req.query.itemPerPage = '0';
+
         return new OK({
             message: "All history printjob of user",
             data: await PrintJobService.getPrintingHistoryByUserAndPrinter({
@@ -126,6 +134,8 @@ class PrintJobController {
                 printerId:  "none",
                 startDate:  req.query.startDate as string,
                 endDate:    req.query.endDate as string, 
+                PageNum:    parseInt(req.query.displayPage as string),
+                itemPerPage: parseInt(req.query.itemPerPage as string)
             })
         }).send(res);
     }
@@ -139,11 +149,16 @@ class PrintJobController {
         let userId = req.user.id;
         if(req.user.role == "admin") userId = "none";
 
+        if(req.query.displayPage == null) req.query.displayPage = '0';
+        if(req.query.itemPerPage == null) req.query.itemPerPage = '0';
+
         let result = await PrintJobService.getPrintingHistoryByUserAndPrinter({
             userId:     userId,
             printerId:  req.params.printerId,
             startDate:  req.query.startDate as string,
             endDate:    req.query.endDate as string, 
+            PageNum:    parseInt(req.query.displayPage as string),
+            itemPerPage: parseInt(req.query.itemPerPage as string)
         });
         
         return new OK({

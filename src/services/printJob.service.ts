@@ -18,7 +18,9 @@ class PrintingJobService {
         await PrintJobModel.updateStatus(printJobId, newStatus);
     }
 
-    static async getPrintingHistoryByUserAndPrinter({userId, printerId, startDate, endDate}: {userId: string, printerId: string, startDate: string, endDate: string}) {
+    static async getPrintingHistoryByUserAndPrinter({userId, printerId, startDate, endDate, PageNum, itemPerPage}: 
+                                                    {userId: string, printerId: string, startDate: string, endDate: string, PageNum: number, itemPerPage: number}) {
+
         if(userId == null) throw new BadRequestError("userId is null");
         if(printerId == null) throw new BadRequestError("printerId is null");
 
@@ -29,35 +31,73 @@ class PrintingJobService {
             if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
         }
 
-        if(userId != "none") await UserService.getUser(userId); // Check if user's exist
+        if(!Number.isInteger(PageNum) || PageNum < 0) 
+            throw new BadRequestError("Pagination: displayPage is invalid");
+        
+        if(!Number.isInteger(itemPerPage) || itemPerPage < 0)
+            throw new BadRequestError("Pagination: itemPerPage is invalid");
 
+        let result;
+        if(userId != "none") await UserService.getUser(userId); // Check if user's exist
         if(userId != "none" && printerId != "none") {
-            return await PrintJobModel.getPrintJobByUserAndPrinter({
+            result = await PrintJobModel.getPrintJobByUserAndPrinter({
                 userId:     userId, 
                 printerId:  printerId, 
                 startDate:  startDate, 
-                endDate:    endDate
+                endDate:    endDate,
+                PageNum:    PageNum,
+                itemPerPage: itemPerPage
             });
         }
         else if(userId != "none") {
-            return await PrintJobModel.getPrintJobByUser({
+            result = await PrintJobModel.getPrintJobByUser({
                 userId:     userId, 
                 startDate:  startDate, 
-                endDate:    endDate
+                endDate:    endDate,
+                PageNum:    PageNum,
+                itemPerPage: itemPerPage
             });
         }
         else if(printerId != "none") {
-            return await PrintJobModel.getPrintJobByPrinter({
+            result = await PrintJobModel.getPrintJobByPrinter({
                 printerId:  printerId, 
                 startDate:  startDate, 
-                endDate:    endDate
+                endDate:    endDate,
+                PageNum:    PageNum,
+                itemPerPage: itemPerPage
             });
         }
         else {
-            return await PrintJobModel.getPrintJobByDuration({
+            result = await PrintJobModel.getPrintJobByDuration({
                 startDate:  startDate, 
-                endDate:    endDate
+                endDate:    endDate,
+                PageNum:    PageNum,
+                itemPerPage: itemPerPage
             });
+        }
+
+        let numItem = result.length;
+        let totalPage = 0;
+        let prices = [];
+        for (let i in result) {
+            let printJob = result[i];
+            prices.push(await PrintingJobService.CalculatePrice({
+                papersize: printJob.papersize,
+                colortype: printJob.colortype,
+                numpage: printJob.numpage,
+                numside: printJob.numside,
+                pagepersheet: printJob.pagepersheet,
+                numcopy: printJob.numcopy
+            }));
+            if (printJob.status != "success") continue;
+            totalPage += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+        }
+
+        return {
+            printjob: result,
+            totalItem: numItem,
+            totalPage: totalPage,
+            prices: prices
         }
     }
 
@@ -117,16 +157,18 @@ class PrintingJobService {
         if (papersize == null || numpage <= 0 || numpage == null || (numside!=1 && numside!=2) ||
             numcopy <= 0 || numcopy == null || pagepersheet <= 0 || pagepersheet == null ||
             colortype == null
-        ) throw new BadRequestError("Invalid parameter for saving CalculatePrice");
+        ) throw new BadRequestError("Invalid parameter for CalculatePrice");
         
         let base_coin = 1;
-        if (papersize == "A4") base_coin = 2;
-        if (papersize == "A3") base_coin = 4;
-        if (papersize == "A2") base_coin = 8;
-        if (papersize == "A1") base_coin = 16;
+        if (papersize == "A5") base_coin = 1;
+        else if (papersize == "A4") base_coin = 2;
+        else if (papersize == "A3") base_coin = 4;
+        else if (papersize == "A2") base_coin = 8;
+        else if (papersize == "A1") base_coin = 16;
+        else throw new BadRequestError("Invalid paper size (A1-A5 only)!");
 
         let color_price = 1;
-        if (colortype != "Grayscale") color_price = 2;
+        if (colortype.toLowerCase() != "grayscale") color_price = 2;
 
         return Math.ceil(numpage / (numside * pagepersheet)) * numcopy * base_coin * color_price;
     }
@@ -134,7 +176,7 @@ class PrintingJobService {
     static async CalculateTotalPage({userId, paperSize, startDate, endDate} : 
                                   {userId: string, paperSize: string, startDate: string, endDate: string}) {
 
-        if (paperSize == null || userId == null) throw new BadRequestError("Invalid parameter for saving CalculatePrice");
+        if (userId == null) throw new BadRequestError("Invalid parameter for CalculateTotalPage");
 
         if(startDate != null && endDate!= null) {
             let checkStartDate = isNaN(Date.parse(startDate));
@@ -148,14 +190,16 @@ class PrintingJobService {
         let allPrintjob = await PrintJobModel.getPrintJobByUser({
             userId: userId, 
             startDate: startDate, 
-            endDate: endDate
+            endDate: endDate,
+            PageNum: 0,
+            itemPerPage: 10
         });
 
         let total_page = 0;
         for (let i in allPrintjob) {
             let printJob = allPrintjob[i];
             if (printJob.status != "success") continue;
-            if (printJob.papersize != paperSize && paperSize != "none") continue;
+            if (printJob.papersize != paperSize && paperSize != null) continue;
             total_page += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
         }
 
@@ -173,7 +217,9 @@ class PrintingJobService {
 
         let allPrintjob = await PrintJobModel.getPrintJobByDuration({
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            PageNum: 0,
+            itemPerPage: 100
         });
 
         let user = new Set();
