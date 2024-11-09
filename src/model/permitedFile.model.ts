@@ -2,7 +2,7 @@ import db from "../dbs/initDatabase";
 
 export interface PermitedFile {
   type: string,
-  isEnable?: boolean,
+  isenable?: boolean,
 }
 
 export default class PermitedFileModel {
@@ -12,11 +12,11 @@ export default class PermitedFileModel {
   }
   static async  addPermitedFile(permitedFile: PermitedFile): Promise<PermitedFile | null> {
     let result;
-    if (permitedFile.isEnable) {
+    if (permitedFile.isenable) {
       result = await db.query(
         `INSERT INTO permitedfile (type, isenable)
         VALUES ($1, $2)
-        RETURNING *;`, [permitedFile.type, permitedFile.isEnable]);
+        RETURNING *;`, [permitedFile.type, permitedFile.isenable]);
     }
     else {
       result = await db.query(

@@ -51,10 +51,10 @@ export class ConfigService {
   }
 
   static async updatePageConfig(data: Partial<Config>): Promise<Config> {
-    if (data.dateGivenPage === undefined && data.defaultNumPage === undefined) 
-      throw new BadRequestError("'dateGivenPage' or 'defaultNumPage' must be given.");
-    if (data.dateGivenPage && (data.dateGivenPage >= 31 || data.dateGivenPage <= 0))
-      throw new BadRequestError("dateGivenPage must be from 1 to 30.");
+    if (data.dategivenpage === undefined && data.defaultnumpage === undefined) 
+      throw new BadRequestError("'dategivenpage' or 'defaultNumPage' must be given.");
+    if (data.dategivenpage && isNaN(Date.parse(data.dategivenpage)))
+      throw new BadRequestError("Not valid date format!");
 
     const result = await ConfigModel.updatePageConfig(data);
     if (result === null) 

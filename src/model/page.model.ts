@@ -2,28 +2,28 @@ import db from "../dbs/initDatabase";
 import { BadRequestError } from "../helper/errorRespone";
 
 export interface Config {
-  defaultNumPage: number,
-  dateGivenPage: number
+  defaultnumpage: number,
+  dategivenpage: string
 }
 
 export default class ConfigModel {
   static async getPageConfig(): Promise<Config | null> {
-    const result = await db.query("SELECT defaultNumPage, dateGivenPage FROM configuration;");
+    const result = await db.query("SELECT defaultnumpage, dategivenpage FROM configuration;");
     return result.rows[0] || null;
   }
-  static async updatePageConfig({ defaultNumPage , dateGivenPage }: Partial<Config>): Promise<Config | null> {
+  static async updatePageConfig({ defaultnumpage , dategivenpage }: Partial<Config>): Promise<Config | null> {
     // Initialize an array to store the SQL set clauses and the values
     const setClauses: string[] = [];
     const values: (number | string)[] = [];
     
     // Check each parameter, and if provided, add it to the set clauses and values array
-    if (defaultNumPage !== undefined) {
-      setClauses.push(`defaultNumPage = $${setClauses.length + 1}`);
-      values.push(defaultNumPage);
+    if (defaultnumpage !== undefined) {
+      setClauses.push(`defaultnumpage = $${setClauses.length + 1}`);
+      values.push(defaultnumpage);
     }
-    if (dateGivenPage !== undefined) {
-      setClauses.push(`dateGivenPage = $${setClauses.length + 1}`);
-      values.push(dateGivenPage);
+    if (dategivenpage !== undefined) {
+      setClauses.push(`dategivenpage = $${setClauses.length + 1}`);
+      values.push(dategivenpage);
     }
 
     // If no parameters are provided, return null or throw an error as there's nothing to update

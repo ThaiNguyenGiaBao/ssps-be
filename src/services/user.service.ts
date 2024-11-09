@@ -88,8 +88,8 @@ class UserService {
 
     static async getUserBalance(userId: string) {
         const user = await UserModel.findUserById(userId);
-        if (user.rows.length == 0) throw new NotFoundError("User not found");
-        return user.rows[0].coinbalance;
+        if (!user) throw new NotFoundError("User not found");
+        return user.coinbalance;
     }
 
     static async updateUserBalance(userId: string, value: number) {
