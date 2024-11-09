@@ -15,23 +15,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const successResponse_1 = require("../helper/successResponse");
 const printer_service_1 = __importDefault(require("../services/printer.service"));
 class PrinterController {
-    static getPrinter(req, res) {
+    static getPrinterByID(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (req.params.id) {
-                const result = yield printer_service_1.default.getPrinterByID(req.params.id);
-                return new successResponse_1.OK({
-                    data: result,
-                    message: "Get printer successfully"
-                }).send(res);
-            }
-            else {
-                const result = yield printer_service_1.default.getAllPrinter();
-                return new successResponse_1.OK({
-                    data: result,
-                    message: result.length === 0 ? "No printer found" :
-                        "Get all printers successfully"
-                }).send(res);
-            }
+            const result = yield printer_service_1.default.getPrinterByID(req.params.id);
+            return new successResponse_1.OK({
+                data: result,
+                message: "Get printer successfully"
+            }).send(res);
+        });
+    }
+    static getAllPrinter(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield printer_service_1.default.getAllPrinter();
+            return new successResponse_1.OK({
+                data: result,
+                message: result.length === 0 ? "No printer found" :
+                    "Get all printers successfully"
+            }).send(res);
         });
     }
     static addPrinter(req, res) {

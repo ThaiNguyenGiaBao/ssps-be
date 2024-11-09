@@ -6,13 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const utils_1 = require("../../utils");
 const printer_controller_1 = __importDefault(require("../../controllers/printer.controller"));
+const auth_middlewares_1 = require("../../middlewares/auth.middlewares");
 const router = express_1.default.Router();
-// router.get("/:id?", asyncHandler(PrinterController.getPrinterById));
-// router.get("/", asyncHandler(PrinterController.getAllPrinters));
-router.get("/:id?", (0, utils_1.asyncHandler)(printer_controller_1.default.getPrinter));
+router.get("/", (0, utils_1.asyncHandler)(printer_controller_1.default.getAllPrinter));
+router.get("/:id", (0, utils_1.asyncHandler)(printer_controller_1.default.getPrinterByID));
 router.post("/", (0, utils_1.asyncHandler)(printer_controller_1.default.addPrinter));
-// Use authentication middleware 
-//router.use(asyncHandler(authenticateToken));
+router.use((0, utils_1.asyncHandler)(auth_middlewares_1.authenticateToken));
 router.delete("/:id", (0, utils_1.asyncHandler)(printer_controller_1.default.removePrinter));
 router.patch("/:id", (0, utils_1.asyncHandler)(printer_controller_1.default.updatePrinter));
 exports.default = router;
