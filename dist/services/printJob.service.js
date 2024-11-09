@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const printJob_model_1 = __importDefault(require("../model/printJob.model"));
 const user_service_1 = __importDefault(require("../services/user.service"));
+const file_service_1 = __importDefault(require("./file.service"));
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 const errorRespone_1 = require("../helper/errorRespone");
 class PrintingJobService {
@@ -21,7 +22,9 @@ class PrintingJobService {
         return __awaiter(this, void 0, void 0, function* () {
             if (printJobId == null)
                 throw new errorRespone_1.BadRequestError("printJobId is null");
-            return yield printJob_model_1.default.getPrintJob(printJobId);
+            let printJob = yield printJob_model_1.default.getPrintJob(printJobId);
+            printJob.filename = (yield file_service_1.default.getFileById("none", printJob.fileid)).filename;
+            return printJob;
         });
     }
     static updateStatus(_a) {
@@ -90,27 +93,25 @@ class PrintingJobService {
                 });
             }
             let numItem = result.length;
-            let totalPage = 0;
-            let prices = [];
+            let totalPage = Math.ceil(numItem / itemPerPage);
+            result = result.slice((PageNum - 1) * itemPerPage, PageNum * itemPerPage);
             for (let i in result) {
                 let printJob = result[i];
-                prices.push(yield PrintingJobService.CalculatePrice({
+                let price = yield PrintingJobService.CalculatePrice({
                     papersize: printJob.papersize,
                     colortype: printJob.colortype,
                     numpage: printJob.numpage,
                     numside: printJob.numside,
                     pagepersheet: printJob.pagepersheet,
                     numcopy: printJob.numcopy
-                }));
-                if (printJob.status != "success")
-                    continue;
-                totalPage += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+                });
+                result[i].price = price;
+                result[i].filename = (yield file_service_1.default.getFileById("none", printJob.fileid)).filename;
             }
             return {
-                printjob: result,
+                printJob: result,
                 totalItem: numItem,
-                totalPage: totalPage,
-                prices: prices
+                totalPage: totalPage
             };
         });
     }
