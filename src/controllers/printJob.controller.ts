@@ -3,6 +3,7 @@ import UserService from "../services/user.service";
 import { Request, Response } from "express";
 import { OK, Created } from "../helper/successResponse";
 import { BadRequestError, ForbiddenError, PaymentRequired } from "../helper/errorRespone";
+import ReportService from "../services/report.service";
 
 class PrintJobController {
     
@@ -84,6 +85,13 @@ class PrintJobController {
 
         // Dont need await here, in reality, we just send printjob to printer and printer will update printJob status.
         // Our task in this controller is to send request, not to wait for it to be finished.
+
+        ReportService.createEvent({
+            userId: req.user.id,
+            type: "print document",
+            description: req.body.printJobId 
+        })
+
         PrintJobService.updateStatus({
             printJobId: req.body.printJobId,
             newStatus: "success"
