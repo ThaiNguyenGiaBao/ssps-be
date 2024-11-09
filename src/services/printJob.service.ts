@@ -77,24 +77,27 @@ class PrintingJobService {
         }
 
         let numItem = result.length;
-        let totalPage = Math.ceil(numItem / itemPerPage);
-        
+        let totalPage = 0;
+        let prices = [];
         for (let i in result) {
             let printJob = result[i];
-            let price = await PrintingJobService.CalculatePrice({
+            prices.push(await PrintingJobService.CalculatePrice({
                 papersize: printJob.papersize,
                 colortype: printJob.colortype,
                 numpage: printJob.numpage,
                 numside: printJob.numside,
                 pagepersheet: printJob.pagepersheet,
                 numcopy: printJob.numcopy
-            });
+            }));
+            if (printJob.status != "success") continue;
+            totalPage += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
         }
 
         return {
             printjob: result,
             totalItem: numItem,
-            totalPage: totalPage
+            totalPage: totalPage,
+            prices: prices
         }
     }
 
