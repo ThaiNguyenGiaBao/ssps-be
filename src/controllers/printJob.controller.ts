@@ -40,8 +40,8 @@ class PrintJobController {
         return new Created({
             message: "PrintJob created",
             data: {
-                "printJob": printJob,
-                "price": price
+                printJob: printJob,
+                price: price
             }
         }).send(res);
     }
