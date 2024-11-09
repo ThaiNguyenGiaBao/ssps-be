@@ -9,7 +9,7 @@ router.use(asyncHandler(authenticateToken));
 
 router.post("/generateMonthlyReport", asyncHandler(ReportController.generateMonthlyReport));
 router.post("/generateYearlyReport", asyncHandler(ReportController.generateYearlyReport)); 
-router.post("/addEvent", asyncHandler(ReportController.addEvent)); // Not really necessary
+// router.post("/addEvent", asyncHandler(ReportController.addEvent)); // Not really necessary
 
 // router.get("/event", asyncHandler(ReportController.getReportById));
 // router.get("/event/:eventId", asyncHandler(ReportController.getReportById));
