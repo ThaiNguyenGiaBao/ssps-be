@@ -1,4 +1,3 @@
-import { query } from "express";
 import db from "../dbs/initDatabase";
 
 export interface Printer {
@@ -48,11 +47,10 @@ export default class PrinterModel {
     }
     const setClauses = fields.map((field, index) => `${field} = $${index+1}`).join(', ');
 
-    console.log(setClauses)
     const result = await db.query(`
       UPDATE PRINTER
       SET ${setClauses}
-      WHERE ID = $2
+      WHERE ID = $${fields.length+1}
       RETURNING *`, [...values, printerID]); 
     return result.rows[0] || null;
   }

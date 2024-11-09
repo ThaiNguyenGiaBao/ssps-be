@@ -6,22 +6,21 @@ import PrinterService from "../services/printer.service";
 import { Printer } from "../model/printer.model";
 
 class PrinterController {
-  static async getPrinter(req: Request, res: Response) {
-    if (req.params.id) {
-      const result = await PrinterService.getPrinterByID(req.params.id);
-      return new OK({
-        data: result,
-        message: "Get printer successfully"
-      }).send(res);
-    }
-    else {
-      const result = await PrinterService.getAllPrinter();
-      return new OK({
-        data: result,
-        message: result.length === 0? "No printer found" : 
-          "Get all printers successfully"
-      }).send(res);
-    }
+  static async getPrinterByID(req: Request, res: Response) {
+    const result = await PrinterService.getPrinterByID(req.params.id);
+    return new OK({
+      data: result,
+      message: "Get printer successfully"
+    }).send(res);
+  }
+  
+  static async getAllPrinter(req: Request, res: Response) {
+    const result = await PrinterService.getAllPrinter();
+    return new OK({
+      data: result,
+      message: result.length === 0? "No printer found" : 
+        "Get all printers successfully"
+    }).send(res);
   }
 
   static async addPrinter(req: Request, res: Response) {

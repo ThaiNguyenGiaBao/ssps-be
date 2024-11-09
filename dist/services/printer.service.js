@@ -24,7 +24,7 @@ class PrinterService {
     static getPrinterByID(printerID) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!printerID) {
-                throw new errorRespone_1.BadRequestError("Printer ID is required");
+                throw new errorRespone_1.BadRequestError("Printer ID is required.");
             }
             const result = yield printer_model_1.default.findPrinterByID(printerID);
             if (result === null)
@@ -53,7 +53,7 @@ class PrinterService {
     static removePrinter(printerID) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!printerID)
-                throw new errorRespone_1.BadRequestError("Printer ID is required");
+                throw new errorRespone_1.BadRequestError("Printer ID is required.");
             const result = yield printer_model_1.default.deletePrinter(printerID);
             if (result === null)
                 throw new errorRespone_1.NotFoundError("Cannot found the printer to delete");
@@ -62,6 +62,13 @@ class PrinterService {
     }
     static updatePrinter(printerID, data) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!printerID)
+                throw new errorRespone_1.BadRequestError("Printer ID is required.");
+            const values = Object.values(data);
+            values.forEach(value => {
+                if (!value)
+                    throw new errorRespone_1.BadRequestError("Updated value cannot be null | undefined!");
+            });
             if (data.status && data.status !== "enabled" && data.status != "disabled")
                 throw new errorRespone_1.BadRequestError("Printer status must be 'enabled' or 'disabled'");
             const result = yield printer_model_1.default.updatePrinter(printerID, data);

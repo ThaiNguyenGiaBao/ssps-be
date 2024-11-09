@@ -82,9 +82,9 @@ class UserService {
     static getUserBalance(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield user_model_1.default.findUserById(userId);
-            if (user.rows.length == 0)
+            if (!user)
                 throw new errorRespone_1.NotFoundError("User not found");
-            return user.rows[0].coinbalance;
+            return user.coinbalance;
         });
     }
     static updateUserBalance(userId, value) {

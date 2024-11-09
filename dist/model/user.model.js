@@ -69,7 +69,7 @@ class AccessModel {
             values.push(userId);
             const updatedUserResult = yield initDatabase_1.default.query(updateQuery, values);
             const updatedUser = updatedUserResult.rows[0];
-            console.log("Updated user", updatedUser);
+            // console.log("Updated user", updatedUser);
             return updatedUser;
         });
     }

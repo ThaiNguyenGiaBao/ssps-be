@@ -5,7 +5,8 @@ import PrintingRouter from "./printJob";
 import UserRouter from "./user";
 import FileRouter from "./file";
 import PrinterRouter from "./printer";
-import ReportRouter from "./report"
+import ConfigRouter from "./config";
+import PaymentRouter from "./payment"
 const router = express.Router();
 
 router.get("/", (req: Request, res: Response) => {
@@ -21,6 +22,7 @@ router.use("/api/file", FileRouter);
 
 router.use("/api/printer", PrinterRouter);
 
-router.use("/api/report", ReportRouter);
+router.use("/api/config", ConfigRouter);
 
+router.use("/api/payment", PaymentRouter);
 export default router;

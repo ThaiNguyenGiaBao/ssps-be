@@ -13,31 +13,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
-class PrinterModel {
-    static findAllPrinter() {
+class PermitedFileModel {
+    static findAllPermitedFiles() {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield initDatabase_1.default.query(`SELECT * FROM PRINTER`);
+            const result = yield initDatabase_1.default.query("SELECT * FROM permitedfile;");
             return result.rows;
         });
     }
-    static findPrinterByID(printerID) {
+    static addPermitedFile(permitedFile) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield initDatabase_1.default.query(`
-      SELECT * FROM PRINTER 
-      WHERE ID=$1`, [printerID]);
+            let result;
+            if (permitedFile.isenable) {
+                result = yield initDatabase_1.default.query(`INSERT INTO permitedfile (type, isenable)
+        VALUES ($1, $2)
+        RETURNING *;`, [permitedFile.type, permitedFile.isenable]);
+            }
+            else {
+                result = yield initDatabase_1.default.query(`INSERT INTO permitedfile (type)
+        VALUES ($1)
+        RETURNING *;`, [permitedFile.type]);
+            }
             return result.rows[0] || null;
         });
     }
-    static createPrinter(printer) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const result = yield initDatabase_1.default.query(`
-      INSERT INTO PRINTER (brand, model, shortdescription, status, locationid)
-      VALUES ($1, $2, $3, $4, $5) 
-      RETURNING *`, [printer.brand, printer.model, printer.shortDescription || null, printer.status, printer.locationId || null]);
-            return result.rows[0] || null;
-        });
-    }
-    static updatePrinter(printerID, data) {
+    static updatePermitedFile(type, data) {
         return __awaiter(this, void 0, void 0, function* () {
             const fields = Object.keys(data);
             const values = Object.values(data);
@@ -47,21 +46,21 @@ class PrinterModel {
             }
             const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
             const result = yield initDatabase_1.default.query(`
-      UPDATE PRINTER
+      UPDATE PERMITEDFILE
       SET ${setClauses}
-      WHERE ID = $${fields.length + 1}
-      RETURNING *`, [...values, printerID]);
+      WHERE TYPE = $${fields.length + 1}
+      RETURNING *`, [...values, type]);
             return result.rows[0] || null;
         });
     }
-    static deletePrinter(printerID) {
+    static deletePermitedFile(type) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield initDatabase_1.default.query(`
-      DELETE FROM PRINTER
-      WHERE ID = $1
-      RETURNING *`, [printerID]);
+      DELETE FROM permitedfile
+      WHERE TYPE = $1
+      RETURNING *;`, [type]);
             return result.rows[0] || null;
         });
     }
 }
-exports.default = PrinterModel;
+exports.default = PermitedFileModel;

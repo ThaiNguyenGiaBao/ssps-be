@@ -70,7 +70,7 @@ class AccessModel {
         values.push(userId);
         const updatedUserResult = await db.query(updateQuery, values);
         const updatedUser = updatedUserResult.rows[0];
-        console.log("Updated user", updatedUser);
+        // console.log("Updated user", updatedUser);
         return updatedUser;
     }
     static async deleteUser(userId: string) {
