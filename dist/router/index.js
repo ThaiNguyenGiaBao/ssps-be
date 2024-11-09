@@ -11,6 +11,7 @@ const file_1 = __importDefault(require("./file"));
 const printer_1 = __importDefault(require("./printer"));
 const config_1 = __importDefault(require("./config"));
 const payment_1 = __importDefault(require("./payment"));
+const report_1 = __importDefault(require("./report"));
 const router = express_1.default.Router();
 router.get("/", (req, res) => {
     res.json({ message: "Hello World" });
@@ -22,4 +23,5 @@ router.use("/api/file", file_1.default);
 router.use("/api/printer", printer_1.default);
 router.use("/api/config", config_1.default);
 router.use("/api/payment", payment_1.default);
+router.use("/api/report", report_1.default);
 exports.default = router;
