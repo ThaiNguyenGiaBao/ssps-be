@@ -217,7 +217,7 @@ class PrintJobController {
             throw new ForbiddenError("Only admin can get total number of user");
         }
         
-
+        
         return new OK({
             message: "Total user",
             data: await PrintJobService.CalculateTotalUser({
