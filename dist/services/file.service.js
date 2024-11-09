@@ -13,8 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const errorRespone_1 = require("../helper/errorRespone");
-const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 const uploadFile_1 = __importDefault(require("../utils/uploadFile"));
+const file_model_1 = __importDefault(require("../model/file.model"));
 class FileService {
     // router.post("/upload", upload.single("file"), asyncHandler(FileController.uploadFile));
     static uploadFile(userId, file) {
@@ -26,41 +26,60 @@ class FileService {
                 buffer: file.buffer,
                 mimetype: file.mimetype
             });
-            // Save into database
-            const newFile = yield initDatabase_1.default.query("INSERT INTO file (filename, url, userId, type) VALUES ($1,$2, $3, $4) RETURNING *", [
+            const newFile = yield file_model_1.default.createFile({
                 uniqueFilename,
                 downloadURL,
                 userId,
-                file.mimetype
-            ]);
-            return newFile.rows[0];
+                file
+            });
+            return newFile;
         });
     }
     //router.get("/", asyncHandler(FileController.getAllFiles));
-    static getAllFiles() {
+    static getAllFiles(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ page, limit }) {
+            return yield file_model_1.default.getAllFiles({ page, limit });
+        });
+    }
+    static getFileById(userId, fileId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const files = yield initDatabase_1.default.query("SELECT * FROM file");
-            return files.rows;
+            if (!fileId) {
+                throw new errorRespone_1.BadRequestError("File Id is required");
+            }
+            const file = yield file_model_1.default.getFileById(fileId);
+            if (!file) {
+                throw new errorRespone_1.NotFoundError("File not found");
+            }
+            return file;
         });
     }
     // router.get("/:userId", asyncHandler(FileController.getFile));
     static getFileByUserId(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const file = yield initDatabase_1.default.query("SELECT * FROM file WHERE userId = $1", [userId]);
-            return file.rows;
+            if (!userId) {
+                throw new errorRespone_1.BadRequestError("User Id is required");
+            }
+            const file = yield file_model_1.default.getFileByUserId(userId);
+            if (file.length === 0) {
+                throw new errorRespone_1.NotFoundError("File not found");
+            }
+            return file;
         });
     }
     // router.delete("/delete", asyncHandler(FileController.deleteFile));
     static deleteFile(_a) {
         return __awaiter(this, arguments, void 0, function* ({ userId, fileId }) {
+            if (!userId) {
+                throw new errorRespone_1.BadRequestError("User Id is required");
+            }
             if (!fileId) {
                 throw new errorRespone_1.BadRequestError("File Id is required");
             }
-            const file = yield initDatabase_1.default.query("DELETE FROM file WHERE id = $1 and userId = $2 RETURNING *", [fileId, userId]);
-            if (file.rows.length === 0) {
+            const file = yield file_model_1.default.getFileById(fileId);
+            if (!file) {
                 throw new errorRespone_1.NotFoundError("File not found");
             }
-            return file.rows[0];
+            return yield file_model_1.default.deleteFile(fileId);
         });
     }
 }

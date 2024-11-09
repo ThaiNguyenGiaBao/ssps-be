@@ -1,12 +1,15 @@
 import PrintJobModel from "../model/printJob.model";
 import UserService from "../services/user.service";
+import FileService from "./file.service";
 import db from "../dbs/initDatabase";
 import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 
 class PrintingJobService {
     static async getPrintJob(printJobId: string) {
         if(printJobId == null) throw new BadRequestError("printJobId is null");
-        return await PrintJobModel.getPrintJob(printJobId);
+        let printJob = await PrintJobModel.getPrintJob(printJobId);
+        printJob.filename = (await FileService.getFileById("none", printJob.fileid)).filename;
+        return printJob;
     }
 
     static async updateStatus({printJobId, newStatus}: {printJobId: string, newStatus: string}) {
@@ -77,27 +80,27 @@ class PrintingJobService {
         }
 
         let numItem = result.length;
-        let totalPage = 0;
-        let prices = [];
+        let totalPage = Math.ceil(numItem / itemPerPage);
+        result = result.slice((PageNum-1) * itemPerPage, PageNum*itemPerPage);
+
         for (let i in result) {
             let printJob = result[i];
-            prices.push(await PrintingJobService.CalculatePrice({
+            let price = await PrintingJobService.CalculatePrice({
                 papersize: printJob.papersize,
                 colortype: printJob.colortype,
                 numpage: printJob.numpage,
                 numside: printJob.numside,
                 pagepersheet: printJob.pagepersheet,
                 numcopy: printJob.numcopy
-            }));
-            if (printJob.status != "success") continue;
-            totalPage += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+            });
+            result[i].price = price;
+            result[i].filename = (await FileService.getFileById("none", printJob.fileid)).filename;
         }
 
         return {
-            printjob: result,
+            printJob: result,
             totalItem: numItem,
-            totalPage: totalPage,
-            prices: prices
+            totalPage: totalPage
         }
     }
 

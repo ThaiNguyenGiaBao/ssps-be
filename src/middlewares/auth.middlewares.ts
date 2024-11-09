@@ -16,12 +16,12 @@ declare global {
 const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.token;
     if (!token) {
-        throw new UnauthorizedError("Unauthorized");
+        throw new UnauthorizedError("No token provided");
     }
 
     jwt.verify(token, process.env.JWT_SECRET || "secret", async (err: jwt.VerifyErrors | null, member: any) => {
         if (err) {
-            throw new UnauthorizedError("Unauthorized");
+            throw new UnauthorizedError("Invalid token");
         }
 
         req.user = member as { id: string; role: string };

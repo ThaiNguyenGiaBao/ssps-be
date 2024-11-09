@@ -17,7 +17,14 @@ const firebaseConfig = {
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
-// Initialize Firebase
-const firebaseApp = (0, app_1.initializeApp)(firebaseConfig);
-const storage = (0, storage_1.getStorage)(firebaseApp);
+// Initialize Firebase with try-catch
+let storage;
+try {
+    const firebaseApp = (0, app_1.initializeApp)(firebaseConfig);
+    storage = (0, storage_1.getStorage)(firebaseApp);
+    console.log("Firebase connected successfully.");
+}
+catch (error) {
+    console.error("Failed to connect to Firebase:", error);
+}
 exports.default = storage;

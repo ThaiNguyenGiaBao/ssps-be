@@ -8,9 +8,10 @@ const router = express.Router();
 
 router.use(asyncHandler(authenticateToken));
 router.get("/", asyncHandler(FileController.getAllFiles));
-router.get("/:userId", asyncHandler(FileController.getFile));
+router.get("/:fileId", asyncHandler(FileController.getFileById));
+
+router.get("/user/:userId", asyncHandler(FileController.getFileByUserId));
 router.post("/upload", upload.single("file"), asyncHandler(FileController.uploadFile));
 router.delete("/delete", asyncHandler(FileController.deleteFile));
 
 export default router;
-

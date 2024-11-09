@@ -9,18 +9,12 @@ const auth_middlewares_1 = require("../../middlewares/auth.middlewares");
 const printJob_controller_1 = __importDefault(require("../../controllers/printJob.controller"));
 const router = express_1.default.Router();
 router.use((0, utils_1.asyncHandler)(auth_middlewares_1.authenticateToken));
-router.post("/print", (0, utils_1.asyncHandler)(printJob_controller_1.default.Print));
-router.post("/request-printing", (0, utils_1.asyncHandler)(printJob_controller_1.default.StartPrintJob));
-// GET /printjob/user/:userId
-router.get("/user/:userId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintingHistory)); //GetPrintingHistoryByUserId
-// GET /printjob/printer/:printerId
-router.get("/printer/:printerId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintingHistory)); //GetPrintingHistoryByPrinterId
-// GET /:printJobId
-//router.get("/:printJobId", asyncHandler(PrintingController.getPrintJob)); //GetPrintJob
-// // GET
-// router.get("/totalnumpage/:userId", asyncHandler(PrintingController.getNumberOfPage));
-// // GET
-// router.get("/totalUser?startDate=string&endDate=string, asyncHandler(PrintingController.getTotalUser));
-// GET POST req {id, name, password, ..}, res {user} POST /user {name, password, ..}
-// GET req  {id, filename} , res {file, priner} GET /file/:id
+router.post("/createPrintJob", (0, utils_1.asyncHandler)(printJob_controller_1.default.CreatePrintJob));
+router.post("/startPrintJob", (0, utils_1.asyncHandler)(printJob_controller_1.default.StartPrintJob));
+router.get("/all", (0, utils_1.asyncHandler)(printJob_controller_1.default.getAllPrintingHistory));
+router.get("/user/:userId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintingHistoryByUser));
+router.get("/printer/:printerId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintingHistoryByPrinter));
+router.get("/totalPage/:userId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getTotalPage));
+router.get("/totalUser", (0, utils_1.asyncHandler)(printJob_controller_1.default.getTotalUser));
+router.get("/:printjobId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintJob));
 exports.default = router;

@@ -92,6 +92,13 @@ class PrintJobController {
             description: req.body.printJobId 
         })
 
+
+        ReportService.createEvent({
+            userId: req.user.id,
+            type: "print document",
+            description: req.body.printJobId 
+        })
+
         PrintJobService.updateStatus({
             printJobId: req.body.printJobId,
             newStatus: "success"
@@ -108,8 +115,8 @@ class PrintJobController {
         console.log("PrintJobController::getAllPrintingHistory", req.query);
         if(req.user.role == "user") throw new ForbiddenError("Permission denied on getting history of other user");
 
-        if(req.query.displayPage == null) req.query.displayPage = '0';
-        if(req.query.itemPerPage == null) req.query.itemPerPage = '0';
+        const page = req.query.displayPage ? parseInt(req.query.displayPage as string) : 1;
+        const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage as string) : 10;
 
         return new OK({
             message: "All history",
@@ -118,8 +125,8 @@ class PrintJobController {
                 printerId:  "none",
                 startDate:  req.query.startDate as string,
                 endDate:    req.query.endDate as string, 
-                PageNum:    parseInt(req.query.displayPage as string),
-                itemPerPage: parseInt(req.query.itemPerPage as string)
+                PageNum:    page,
+                itemPerPage: limit
             })
         }).send(res);
     }
@@ -132,8 +139,8 @@ class PrintJobController {
             throw new ForbiddenError("Permission denied on getting history of other user");
         }
 
-        if(req.query.displayPage == null) req.query.displayPage = '0';
-        if(req.query.itemPerPage == null) req.query.itemPerPage = '0';
+        const page = req.query.displayPage ? parseInt(req.query.displayPage as string) : 1;
+        const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage as string) : 10;
 
         return new OK({
             message: "All history printjob of user",
@@ -142,8 +149,8 @@ class PrintJobController {
                 printerId:  "none",
                 startDate:  req.query.startDate as string,
                 endDate:    req.query.endDate as string, 
-                PageNum:    parseInt(req.query.displayPage as string),
-                itemPerPage: parseInt(req.query.itemPerPage as string)
+                PageNum:    page,
+                itemPerPage: limit
             })
         }).send(res);
     }
@@ -157,16 +164,16 @@ class PrintJobController {
         let userId = req.user.id;
         if(req.user.role == "admin") userId = "none";
 
-        if(req.query.displayPage == null) req.query.displayPage = '0';
-        if(req.query.itemPerPage == null) req.query.itemPerPage = '0';
+        const page = req.query.displayPage ? parseInt(req.query.displayPage as string) : 1;
+        const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage as string) : 10;
 
         let result = await PrintJobService.getPrintingHistoryByUserAndPrinter({
             userId:     userId,
             printerId:  req.params.printerId,
             startDate:  req.query.startDate as string,
             endDate:    req.query.endDate as string, 
-            PageNum:    parseInt(req.query.displayPage as string),
-            itemPerPage: parseInt(req.query.itemPerPage as string)
+            PageNum:    page,
+            itemPerPage: limit
         });
         
         return new OK({
@@ -217,7 +224,7 @@ class PrintJobController {
             throw new ForbiddenError("Only admin can get total number of user");
         }
         
-        
+                
         return new OK({
             message: "Total user",
             data: await PrintJobService.CalculateTotalUser({

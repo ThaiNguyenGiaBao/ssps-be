@@ -20,12 +20,32 @@ class UserController {
     static getUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("GetUserProfile::", req.params);
-            if (req.user.id != req.params.userId) {
+            if (req.params.userId == "me") {
+                return new successResponse_1.Created({
+                    message: "Get user profile successfully",
+                    data: yield user_service_1.default.getUser(req.user.id)
+                }).send(res);
+            }
+            if (req.user.id != req.params.userId && req.user.role != "admin") {
                 throw new errorRespone_1.ForbiddenError("You are not allowed to access this resource");
             }
             return new successResponse_1.Created({
                 message: "Get user profile successfully",
                 data: yield user_service_1.default.getUser(req.params.userId)
+            }).send(res);
+        });
+    }
+    static getAllUsers(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("GetAllUsers::", req.query);
+            const page = req.query.page ? parseInt(req.query.page) : 1;
+            const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("You are not allowed to get all users");
+            }
+            return new successResponse_1.OK({
+                message: "Get all users successfully",
+                data: yield user_service_1.default.getAllUsers({ page, limit })
             }).send(res);
         });
     }

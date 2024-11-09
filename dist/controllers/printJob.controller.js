@@ -13,108 +13,207 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const printJob_service_1 = __importDefault(require("../services/printJob.service"));
-const printJob_model_1 = __importDefault(require("../model/printJob.model"));
 const user_service_1 = __importDefault(require("../services/user.service"));
 const successResponse_1 = require("../helper/successResponse");
 const errorRespone_1 = require("../helper/errorRespone");
-// Controller vs Service
-// CreatePrintJob (save config to db, calc price,  return {printJob, price})
-// StartPrintJob (send req to printer (fake API), update status, return {printJob})
-class PrintingController {
-    // Controller must to return { message: string, data: any }
-    // Anything else must write in service
-    // Create print job (store in db), calculate price, return print job and price
-    static CreatePrintJob(req) {
+class PrintJobController {
+    // Route /createPrintJob
+    static CreatePrintJob(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::CreatePrintJob", req.body);
             if (req.user.role == "admin")
                 throw new errorRespone_1.ForbiddenError("Only accept user");
-            req.body.status = "created";
-            req.body.userid = req.user.id;
-            let printJob = yield printJob_model_1.default.savePrintJob(JSON.stringify(req.body));
-            return new successResponse_1.Created({
-                message: "Print job created",
-                data: printJob
+            let printJob = yield printJob_service_1.default.savePrintJob({
+                printerid: req.body.printerid,
+                userid: req.user.id,
+                fileid: req.body.fileid,
+                papersize: req.body.papersize,
+                numpage: req.body.numpage,
+                numside: req.body.numside,
+                numcopy: req.body.numcopy,
+                pagepersheet: req.body.pagepersheet,
+                colortype: req.body.colortype,
+                orientation: req.body.orientation,
+                status: "created"
             });
-        });
-    }
-    // Print file (call Fake API), update print job status, return message
-    static Print(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (req.user.role == "admin")
-                throw new errorRespone_1.ForbiddenError("Only accept user");
-            if (!(yield printJob_model_1.default.checkFileBelongToUser(req.user.id, req.body.fileid))) {
-                throw new errorRespone_1.BadRequestError("User doesn't have this file!");
-            }
-            //const printJob = await PrintingService.CreatePrintJob({});
-            const price = yield printJob_service_1.default.CalculatePrice(JSON.stringify(req.body));
-            return new successResponse_1.OK({
-                message: "Ready for printing!",
+            const price = yield printJob_service_1.default.CalculatePrice({
+                papersize: req.body.papersize,
+                colortype: req.body.colortype,
+                numpage: req.body.numpage,
+                numside: req.body.numside,
+                pagepersheet: req.body.pagepersheet,
+                numcopy: req.body.numcopy
+            });
+            return new successResponse_1.Created({
+                message: "PrintJob created",
                 data: {
-                    //printJob: printJob,
+                    printJob: printJob,
                     price: price
                 }
             }).send(res);
         });
     }
+    // Route /startPrintJob
     static StartPrintJob(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::StartPrintJob", req.body);
             if (req.user.role == "admin")
                 throw new errorRespone_1.ForbiddenError("Only accept user");
-            let printJob = yield printJob_model_1.default.getPrintJob(req.body.printJobId);
-            if (printJob.status == "success") {
-                printJob = yield printJob_model_1.default.clonePrintJob(req.body.printJobId);
-                req.body.printJobId = printJob.id;
-            }
-            // Send request to printer
-            // NOT DONE TASK: CHECK PERMITTED FILE HERE //
+            let printJob = yield printJob_service_1.default.getPrintJob(req.body.printJobId);
+            // TO-DO: CHECK PERMITTED FILE HERE //
             let userBalance = yield user_service_1.default.getUserBalance(req.user.id);
-            let price = yield printJob_service_1.default.CalculatePrice(JSON.stringify(printJob));
+            let price = yield printJob_service_1.default.CalculatePrice({
+                papersize: printJob.papersize,
+                colortype: printJob.colortype,
+                numpage: printJob.numpage,
+                numside: printJob.numside,
+                pagepersheet: printJob.pagepersheet,
+                numcopy: printJob.numcopy
+            });
             if (price > userBalance) {
-                yield printJob_model_1.default.updateStatus(req.body.printJobId, "unpaid");
+                yield printJob_service_1.default.updateStatus({
+                    printJobId: req.body.printJobId,
+                    newStatus: "unpaid"
+                });
                 throw new errorRespone_1.PaymentRequired("User does not have enough coin!");
             }
             yield user_service_1.default.updateUserBalance(req.user.id, userBalance - price);
-            yield printJob_model_1.default.updateStatus(req.body.printJobId, "waiting");
+            yield printJob_service_1.default.updateStatus({
+                printJobId: req.body.printJobId,
+                newStatus: "waiting"
+            });
             // send printing request and done task
-            //PrinterService.printFile(req.body.printJobId);
+            // Printfile
+            // Dont need await here, in reality, we just send printjob to printer and printer will update printJob status.
+            // Our task in this controller is to send request, not to wait for it to be finished.
+            printJob_service_1.default.updateStatus({
+                printJobId: req.body.printJobId,
+                newStatus: "success"
+            });
             return new successResponse_1.OK({
                 message: "Accept printing request",
-                data: "OK" // Return PringJob
+                data: printJob
             }).send(res);
         });
     }
-    // Should separate to two function: getPrintJobByUserId and getPrintJobByPrinterId; add function getAllPrintJobs
-    static getPrintingHistory(req, res) {
+    // Route /all : Get all history
+    static getAllPrintingHistory(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            let userid = req.body.userId;
+            console.log("PrintJobController::getAllPrintingHistory", req.query);
             if (req.user.role == "user")
-                userid = req.user.id;
+                throw new errorRespone_1.ForbiddenError("Permission denied on getting history of other user");
+            if (req.query.displayPage == null)
+                req.query.displayPage = "0";
+            if (req.query.itemPerPage == null)
+                req.query.itemPerPage = "0";
             return new successResponse_1.OK({
-                message: "All history printjob",
-                data: yield printJob_model_1.default.getPrintJobByUserAndPrinter(userid, req.body.printerId, req.body.startDate, req.body.endDate, req.body.status)
+                message: "All history",
+                data: yield printJob_service_1.default.getPrintingHistoryByUserAndPrinter({
+                    userId: "none",
+                    printerId: "none",
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                    PageNum: parseInt(req.query.displayPage),
+                    itemPerPage: parseInt(req.query.itemPerPage)
+                })
             }).send(res);
         });
     }
-    static getNumberOfPage(req, res) {
+    // Route /user/:userId : Get history of a user
+    static getPrintingHistoryByUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            let userid = req.body.userId;
-            if (req.user.role == "user")
-                userid = req.user.id;
+            console.log("PrintJobController::getPrintingHistoryByUser", req.params, req.query);
+            if (req.user.role == "user" && req.params.userId != req.user.id) {
+                throw new errorRespone_1.ForbiddenError("Permission denied on getting history of other user");
+            }
+            const page = req.query.displayPage ? parseInt(req.query.displayPage) : 1;
+            const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage) : 10;
             return new successResponse_1.OK({
-                message: "Total page",
-                data: yield printJob_service_1.default.CalculateNumPage(userid, req.body.paperSize, req.body.startDate, req.body.endDate)
+                message: "All history printjob of user",
+                data: yield printJob_service_1.default.getPrintingHistoryByUserAndPrinter({
+                    userId: req.params.userId,
+                    printerId: "none",
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                    PageNum: page,
+                    itemPerPage: limit
+                })
             }).send(res);
         });
     }
-    static getNumberOfUserPrint(req, res) {
+    // Route /printer/:printerId : Get history of a printer
+    // If user's role is admin, return all printJob of a printer
+    // If user's role is user, return all printJob belong to that user of a printer
+    static getPrintingHistoryByPrinter(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (req.body.role == "user")
-                throw new errorRespone_1.ForbiddenError("Only accept admin");
+            console.log("PrintJobController::getPrintingHistoryByPrinter", req.params, req.query);
+            let userId = req.user.id;
+            if (req.user.role == "admin")
+                userId = "none";
+            if (req.query.displayPage == null)
+                req.query.displayPage = "0";
+            if (req.query.itemPerPage == null)
+                req.query.itemPerPage = "0";
+            let result = yield printJob_service_1.default.getPrintingHistoryByUserAndPrinter({
+                userId: userId,
+                printerId: req.params.printerId,
+                startDate: req.query.startDate,
+                endDate: req.query.endDate,
+                PageNum: parseInt(req.query.displayPage),
+                itemPerPage: parseInt(req.query.itemPerPage)
+            });
             return new successResponse_1.OK({
-                message: "Total user use printing service",
-                data: yield printJob_service_1.default.CalculateNumUserPrint(req.body.startDate, req.body.endDate)
+                message: "All history printjob of printer",
+                data: result
+            }).send(res);
+        });
+    }
+    static getPrintJob(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::getPrintJob", req.params);
+            let printJob = yield printJob_service_1.default.getPrintJob(req.params.printjobId);
+            if (req.user.role == "user" && req.user.id != printJob.userid) {
+                throw new errorRespone_1.ForbiddenError("Permission denied on getting other user's printJob");
+            }
+            return new successResponse_1.OK({
+                message: "PrintJob",
+                data: printJob
+            }).send(res);
+        });
+    }
+    // Route /totalPage/:userId : Get total page used by a user
+    static getTotalPage(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::getTotalPage", req.params, req.query);
+            if (req.user.role == "user" && req.params.userId != req.user.id) {
+                throw new errorRespone_1.ForbiddenError("Permission denied on getting other user's total page");
+            }
+            return new successResponse_1.OK({
+                message: "Total printed page of user",
+                data: yield printJob_service_1.default.CalculateTotalPage({
+                    userId: req.params.userId,
+                    paperSize: req.query.paperSize,
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate
+                })
+            }).send(res);
+        });
+    }
+    // Route /totalUser : Get total user active from startDate to endDate
+    static getTotalUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::getTotalUser", req.params, req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Only admin can get total number of user");
+            }
+            return new successResponse_1.OK({
+                message: "Total user",
+                data: yield printJob_service_1.default.CalculateTotalUser({
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate
+                })
             }).send(res);
         });
     }
 }
-exports.default = PrintingController;
+exports.default = PrintJobController;

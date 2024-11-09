@@ -1,20 +1,15 @@
 import express from "express";
 import { asyncHandler } from "../../utils";
 import PrinterController from "../../controllers/printer.controller";
+import { authenticateToken } from "../../middlewares/auth.middlewares";
 
 const router = express.Router();
 
-
-// router.get("/:id?", asyncHandler(PrinterController.getPrinterById));
-// router.get("/", asyncHandler(PrinterController.getAllPrinters));
-
-
-router.get("/:id?", asyncHandler(PrinterController.getPrinter));
+router.get("/", asyncHandler(PrinterController.getAllPrinter));
+router.get("/:id", asyncHandler(PrinterController.getPrinterByID));
 router.post("/", asyncHandler(PrinterController.addPrinter));
 
-// Use authentication middleware 
-//router.use(asyncHandler(authenticateToken));
-
+router.use(asyncHandler(authenticateToken));
 
 router.delete("/:id", asyncHandler(PrinterController.removePrinter));
 router.patch("/:id", asyncHandler(PrinterController.updatePrinter));
