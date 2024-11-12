@@ -37,7 +37,7 @@ class PrinterController {
     return new Created({
       message: "Printer added succeessfully",
       data: result
-    }).send(res)
+    }).send(res);
   }
 
   static async removePrinter(req: Request, res: Response) {

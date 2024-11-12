@@ -1,4 +1,5 @@
 import db from "../dbs/initDatabase";
+import { BadRequestError } from "../helper/errorRespone";
 
 export interface Printer {
   id: string,
@@ -7,13 +8,6 @@ export interface Printer {
   shortDescription?: string,
   status: "enabled" | "disabled",
   locationId?: string
-}
-
-export interface Location {
-  id: string;             
-  campusName: string;     
-  buildingName: string;  
-  roomNumber: number;      
 }
 
 export default class PrinterModel {
@@ -43,7 +37,7 @@ export default class PrinterModel {
     const values = Object.values(data);
     // Return early if no fields to update
     if (fields.length === 0) {
-      throw new Error("No fields provided to update");
+      throw new BadRequestError("No fields provided to update");
     }
     const setClauses = fields.map((field, index) => `${field} = $${index+1}`).join(', ');
 

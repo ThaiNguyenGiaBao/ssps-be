@@ -7,6 +7,7 @@ import FileRouter from "./file";
 import PrinterRouter from "./printer";
 import ConfigRouter from "./config";
 import PaymentRouter from "./payment"
+import LocationRouter from "./location"
 const router = express.Router();
 
 router.get("/", (req: Request, res: Response) => {
@@ -25,4 +26,6 @@ router.use("/api/printer", PrinterRouter);
 router.use("/api/config", ConfigRouter);
 
 router.use("/api/payment", PaymentRouter);
+
+router.use("/api/location", LocationRouter)
 export default router;
