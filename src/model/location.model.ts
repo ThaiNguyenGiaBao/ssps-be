@@ -9,12 +9,15 @@ export interface Location {
 }
 
 class LocationModel {
-  static async getAllLocation(): Promise<Location[]> {
-    const result = await db.query(`SELECT * FROM LOCATION;`);
+  static async getAllLocation({offset, limit}: {offset: number, limit: number}): Promise<Location[]> {
+    const result = await db.query(`
+      SELECT * 
+      FROM LOCATION
+      LIMIT $1 OFFSET $2;`, [limit, offset]);
     return result.rows;
   }
   
-  static async getLocation(data: Partial<Location>): Promise<Location[]> {
+  static async getLocation(data: Partial<Location>, {offset, limit}: {offset: number, limit: number}): Promise<Location[]> {
     const fields = Object.keys(data);
     const values = Object.values(data);
     if (fields.length === 0) {
@@ -24,7 +27,8 @@ class LocationModel {
     const result = await db.query(`
       SELECT *
       FROM LOCATION
-      WHERE ${setClauses};`, [...values]); 
+      WHERE ${setClauses}
+      LIMIT $${fields.length+1} OFFSET $${fields.length+2};`, [...values, limit, offset]); 
     return result.rows;
   }
 

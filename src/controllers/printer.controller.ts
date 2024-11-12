@@ -7,7 +7,11 @@ import { Printer } from "../model/printer.model";
 
 class PrinterController {
   static async getPrinterByID(req: Request, res: Response) {
-    const result = await PrinterService.getPrinterByID(req.params.id);
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const offset = (page - 1) * limit;
+
+    const result = await PrinterService.getPrinterByID(req.params.id, { offset, limit });
     return new OK({
       data: result,
       message: "Get printer successfully"
@@ -15,7 +19,11 @@ class PrinterController {
   }
   
   static async getAllPrinter(req: Request, res: Response) {
-    const result = await PrinterService.getAllPrinter();
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const offset = (page - 1) * limit;
+
+    const result = await PrinterService.getAllPrinter({offset, limit});
     return new OK({
       data: result,
       message: result.length === 0? "No printer found" : 

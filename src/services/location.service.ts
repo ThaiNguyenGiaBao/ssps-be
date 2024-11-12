@@ -1,20 +1,19 @@
 import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 import LocationModel from "../model/location.model";
 import { Location } from "../model/location.model";
-import { Printer } from "../model/printer.model";
 
 class LocationService {
-  static async getAllLocation(): Promise<Location[]>  {
-    const result = await LocationModel.getAllLocation();
+  static async getAllLocation({offset, limit}: {offset: number, limit: number}): Promise<Location[]>  {
+    const result = await LocationModel.getAllLocation({offset, limit});
     return result;
   }
 
-  static async getLocation(location: Partial<Location>): Promise<Location[]>  {
+  static async getLocation(location: Partial<Location>, {offset, limit}: {offset: number, limit: number}): Promise<Location[]>  {
     if (!(location.buildingname || location.campusname || location.roomnumber || location.id)) 
       throw new BadRequestError(
         "One of four attributes (buildingname, campusname, roomnumber, id) must be given."
       );
-    const result = await LocationModel.getLocation(location);
+    const result = await LocationModel.getLocation(location, {offset, limit});
     return result;
   }
 

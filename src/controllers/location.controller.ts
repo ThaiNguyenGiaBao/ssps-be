@@ -5,6 +5,10 @@ import { Request, Response } from "express";
 
 class LocationController {
   static async getLocation(req: Request, res: Response) {
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const offset = (page - 1) * limit;
+
     const location: Partial<Location> = {
       ...(typeof req.query.campusname === 'string' && { campusname: req.query.campusname }),
       ...(typeof req.query.buildingname === 'string' && { buildingname: req.query.buildingname }),
@@ -14,9 +18,9 @@ class LocationController {
 
     let result = null;
     if (Object.values(location).every(value => !value))
-      result = await LocationService.getAllLocation();
+      result = await LocationService.getAllLocation({offset, limit});
     else
-      result = await LocationService.getLocation(location);
+      result = await LocationService.getLocation(location, {offset, limit});
     return new OK({
       data: result,
       message: result.length === 0? "No location found" : 

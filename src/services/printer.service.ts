@@ -5,16 +5,16 @@ import { Printer } from "../model/printer.model";
 import PrinterModel from "../model/printer.model";
 
 class PrinterService {
-  static async getAllPrinter(): Promise<Printer[]> {
-    const result: Printer[] = await PrinterModel.findAllPrinter();
+  static async getAllPrinter({offset, limit}: {offset: number, limit: number}): Promise<Printer[]> {
+    const result: Printer[] = await PrinterModel.findAllPrinter({offset, limit});
     return result;
   }
 
-  static async getPrinterByID(printerID: string): Promise<Printer> {
+  static async getPrinterByID(printerID: string, { offset, limit }: { offset: number; limit: number}): Promise<Printer> {
     if (!printerID) {
       throw new BadRequestError("Printer ID is required.")
     }
-    const result: Printer | null = await PrinterModel.findPrinterByID(printerID);
+    const result: Printer | null = await PrinterModel.findPrinterByID(printerID, {offset, limit});
     if (result === null) 
       throw new NotFoundError("Cannot find the printer with ID " + printerID)
     return result;
