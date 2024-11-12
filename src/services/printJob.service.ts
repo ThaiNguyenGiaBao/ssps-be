@@ -176,8 +176,8 @@ class PrintingJobService {
         return Math.ceil(numpage / (numside * pagepersheet)) * numcopy * base_coin * color_price;
     }
 
-    static async CalculateTotalPage({userId, paperSize, startDate, endDate} : 
-                                  {userId: string, paperSize: string, startDate: string, endDate: string}) {
+    static async CalculateTotalPage({userId, paperSize, startDate, endDate, byMonth} : 
+                                  {userId: string, paperSize: string, startDate: string, endDate: string, byMonth: boolean}) {
 
         if (userId == null) throw new BadRequestError("Invalid parameter for CalculateTotalPage");
 
@@ -188,25 +188,50 @@ class PrintingJobService {
             if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
         }
 
-        await UserService.getUser(userId); // Check if user's exist
+        if(userId != "none") await UserService.getUser(userId); // Check if user's exist
 
-        let allPrintjob = await PrintJobModel.getPrintJobByUser({
-            userId: userId, 
-            startDate: startDate, 
-            endDate: endDate,
-            PageNum: 0,
-            itemPerPage: 10
-        });
+        let allPrintjob;
+        if(userId!="none") { 
+            allPrintjob = await PrintJobModel.getPrintJobByUser({
+                userId: userId, 
+                startDate: startDate, 
+                endDate: endDate,
+                PageNum: 0,
+                itemPerPage: 10
+            });
+        } else {
+            allPrintjob = await PrintJobModel.getPrintJobByDuration({
+                startDate: startDate, 
+                endDate: endDate,
+                PageNum: 0,
+                itemPerPage: 10
+            });
+        }
 
         let total_page = 0;
+        let mp = new Map<string, number>();
         for (let i in allPrintjob) {
             let printJob = allPrintjob[i];
             if (printJob.status != "success") continue;
             if (printJob.papersize != paperSize && paperSize != null) continue;
-            total_page += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+            let page_cnt = Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+            total_page += page_cnt;
+            let month = (new Date(printJob.starttime)).toISOString().slice(0,7)
+            let cr = mp.get(month);
+            mp.set(month, (cr?cr:0) + page_cnt);
         }
 
-        return total_page;
+        if(!byMonth) return total_page;
+        else {
+            let result = []
+            for (let key of mp.keys()) {
+                result.push({
+                    month: key,
+                    totalPage: mp.get(key)
+                })
+            }
+            return result
+        }
     }
 
     static async CalculateTotalUser({startDate, endDate}: {startDate: string, endDate: string}) {
