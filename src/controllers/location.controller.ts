@@ -1,3 +1,4 @@
+import { ForbiddenError } from "../helper/errorRespone";
 import { Created, OK } from "../helper/successResponse";
 import { Location } from "../model/location.model";
 import LocationService from "../services/location.service";
@@ -29,6 +30,8 @@ class LocationController {
   }
 
   static async insertLocation(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can add a printer.");
+
     const location: Location = {
       campusname: req.body.campusname,
       buildingname: req.body.buildingname,
@@ -43,6 +46,8 @@ class LocationController {
   }
 
   static async deleteLocation(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can add a printer.");
+
     const result = await LocationService.deleteLocation(req.params.id);
     return new OK({
       message: "Delete Location successfully.",
@@ -51,6 +56,8 @@ class LocationController {
   }
 
   static async updateLocation(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can add a printer.");
+
     const result = await LocationService.updateLocation(req.params.id, req.body);
     return new OK({
       message: "Update location successfully",
