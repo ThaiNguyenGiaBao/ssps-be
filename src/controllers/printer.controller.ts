@@ -24,6 +24,7 @@ class PrinterController {
   }
 
   static async addPrinter(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can add a printer.");
     const printer: Printer = {
       id: "dummy",
       brand: req.body.brand,
@@ -40,6 +41,7 @@ class PrinterController {
   }
 
   static async removePrinter(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can remove a printer.");
     const result = await PrinterService.removePrinter(req.params.id);
     return new OK({
       message: "Delete successfully",
@@ -48,6 +50,7 @@ class PrinterController {
   }
 
   static async updatePrinter(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can update a printer.");
     const result = await PrinterService.updatePrinter(req.params.id, req.body);
     return new OK({
       message: "Update successfully",
