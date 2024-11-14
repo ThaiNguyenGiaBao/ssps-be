@@ -191,7 +191,6 @@ class PrintJobController {
 
     // Route /totalPage/:userId : Get total page used by a user
     static async getTotalPage(req: Request, res: Response) {
-        
         console.log("PrintJobController::getTotalPage", req.params, req.query);
         if(req.user.role == "user" && req.params.userId != req.user.id) {
             throw new ForbiddenError("Permission denied on getting other user's total page");
@@ -204,6 +203,25 @@ class PrintJobController {
                 paperSize:  req.query.paperSize as string,
                 startDate:  req.query.startDate as string,
                 endDate:    req.query.endDate as string, 
+                byMonth:    (req.query.byMonth == 'true'? true: false)
+            })
+        }).send(res);
+    }
+
+    static async getTotalPageOfAll(req: Request, res: Response) {
+        console.log("PrintJobController::getTotalPageOfAll", req.query);
+        if(req.user.role == "admin") {
+            throw new ForbiddenError("Permission denied on getting other user's total page");
+        }
+
+        return new OK({
+            message: "Total printed page of user",
+            data: await PrintJobService.CalculateTotalPage({
+                userId:     "none",
+                paperSize:  req.query.paperSize as string,
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+                byMonth:    (req.query.byMonth == 'true'? true: false)
             })
         }).send(res);
     }
