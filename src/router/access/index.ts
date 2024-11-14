@@ -6,6 +6,7 @@ import { authenticateToken } from "../../middlewares/auth.middlewares";
 const router = express.Router();
 router.post("/signup", asyncHandler(AccessController.SignUp));
 router.post("/signin", asyncHandler(AccessController.SignIn));
+
 router.use(asyncHandler(authenticateToken));
 
 router.get("/", (req, res) => {

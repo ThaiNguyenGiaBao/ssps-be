@@ -13,7 +13,7 @@ class FileController {
 
         return new Created({
             message: "File uploaded successfully",
-            data: await FileService.uploadFile(req.user.id, {
+            data: await FileService.uploadFile("1211d02a-df15-4365-9119-ef6371bdcd79", {
                 originalname: req.file.originalname,
                 buffer: req.file.buffer,
                 mimetype: req.file.mimetype
@@ -33,6 +33,9 @@ class FileController {
             data: await FileService.getFileById(req.user.id, req.params.fileId)
         }).send(res);
     }
+
+    // authenticate token
+    // if(req.body.userRole == "admin")
 
     static async deleteFile(req: Request, res: Response) {
         console.log("FileController::deleteFile", req.body);

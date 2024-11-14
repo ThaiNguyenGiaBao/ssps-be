@@ -3,12 +3,27 @@ import db from "../dbs/initDatabase";
 import uploadFile from "../utils/uploadFile";
 import { FileObject } from "../utils/uploadFile";
 import FileModel from "../model/file.model";
+import pdfParse from "pdf-parse";
+
 class FileService {
+    static async getPdfPageCount(file: FileObject): Promise<number | null> {
+        if (file.mimetype === "application/pdf") {
+            try {
+                const pdfData = await pdfParse(file.buffer);
+                return pdfData.numpages;
+            } catch (error) {
+                console.error("Error parsing PDF:", error);
+                return null;
+            }
+        }
+        return null; // Return null if the file is not a PDF
+    }
+
     // router.post("/upload", upload.single("file"), asyncHandler(FileController.uploadFile));
     static async uploadFile(userId: string, file: FileObject) {
         const timestamp = Date.now();
         const uniqueFilename = `${timestamp}-${file.originalname}`;
-
+        const pageCount = await this.getPdfPageCount(file);
         const downloadURL = await uploadFile({
             originalname: uniqueFilename,
             buffer: file.buffer,
@@ -21,7 +36,9 @@ class FileService {
             userId,
             file
         });
-        return newFile;
+        pageCount == null ? 1 : pageCount;
+
+        return { ...newFile, pageCount};
     }
     //router.get("/", asyncHandler(FileController.getAllFiles));
     static async getAllFiles({ page, limit }: { page: number; limit: number }) {
