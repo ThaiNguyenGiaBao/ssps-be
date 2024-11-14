@@ -5,18 +5,21 @@ class FileModel {
         uniqueFilename,
         downloadURL,
         userId,
-        file
+        file,
+        numpage
     }: {
         uniqueFilename: string;
         downloadURL: string;
         userId: string;
         file: FileObject;
+        numpage: number;
     }) {
-        const newFile = await db.query("INSERT INTO file (filename, url, userId, type) VALUES ($1,$2, $3, $4) RETURNING *", [
+        const newFile = await db.query("INSERT INTO file (filename, url, userId, type, numpage) VALUES ($1,$2, $3, $4, $5) RETURNING *", [
             uniqueFilename,
             downloadURL,
             userId,
-            file.mimetype
+            file.mimetype,
+            numpage
         ]);
         return newFile.rows[0];
     }

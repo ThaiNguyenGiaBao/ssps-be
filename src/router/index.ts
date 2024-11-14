@@ -6,13 +6,9 @@ import UserRouter from "./user";
 import FileRouter from "./file";
 import PrinterRouter from "./printer";
 import ConfigRouter from "./config";
-<<<<<<< HEAD
 import PaymentRouter from "./payment";
 import ReportRouter from "./report";
-=======
-import PaymentRouter from "./payment"
 import LocationRouter from "./location"
->>>>>>> trungtin
 const router = express.Router();
 
 router.get("/", (req: Request, res: Response) => {
@@ -32,9 +28,6 @@ router.use("/api/config", ConfigRouter);
 
 router.use("/api/payment", PaymentRouter);
 
-<<<<<<< HEAD
 router.use("/api/report", ReportRouter);
-=======
 router.use("/api/location", LocationRouter)
->>>>>>> trungtin
 export default router;

@@ -23,22 +23,22 @@ class FileService {
     static async uploadFile(userId: string, file: FileObject) {
         const timestamp = Date.now();
         const uniqueFilename = `${timestamp}-${file.originalname}`;
-        const pageCount = await this.getPdfPageCount(file);
+        let pageCount = await this.getPdfPageCount(file);
         const downloadURL = await uploadFile({
             originalname: uniqueFilename,
             buffer: file.buffer,
             mimetype: file.mimetype
         });
-
+        pageCount = pageCount == null ? 1 : pageCount;
         const newFile = await FileModel.createFile({
             uniqueFilename,
             downloadURL,
             userId,
-            file
+            file,
+            numpage: pageCount
         });
-        pageCount == null ? 1 : pageCount;
 
-        return { ...newFile, pageCount};
+        return newFile;
     }
     //router.get("/", asyncHandler(FileController.getAllFiles));
     static async getAllFiles({ page, limit }: { page: number; limit: number }) {
