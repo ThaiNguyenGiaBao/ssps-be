@@ -8,8 +8,10 @@ export interface Payment {
 }
 
 class PaymentModel {
-  static async getAllPayment (): Promise<Payment[]> {
-    const result = await db.query(`SELECT * FROM PAYMENT;`);
+  static async getAllPayment ({ offset, limit }: {offset: number, limit: number}): Promise<Payment[]> {
+    const result = await db.query(`
+      SELECT * FROM PAYMENT
+      LIMIT $1 OFFSET $2;`, [limit, offset]);
     return result.rows;
   }
   static async insertPayment(user_id: string, amount: number): Promise<Payment | null> {
@@ -18,6 +20,14 @@ class PaymentModel {
       VALUES ($1, $2)
       RETURNING *;`, [user_id, amount]);
     return result.rows[0] || null;
+  }
+  static async getPaymentByUserID (user_id: string, { offset, limit }: {offset: number, limit: number}) {
+    const result = await db.query(`
+      SELECT *
+      FROM PAYMENT 
+      WHERE user_id=$1
+      LIMIT $2 OFFSET $3;`, [user_id, limit, offset]);
+    return result.rows;
   }
 }
 

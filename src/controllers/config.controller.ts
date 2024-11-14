@@ -3,7 +3,7 @@ import { ConfigService } from "../services/config.service";
 import { OK } from "../helper/successResponse";
 import { PermitedFile } from "../model/permitedFile.model";
 import { Config } from "../model/page.model";
-import { NotFoundError } from "../helper/errorRespone";
+import { ForbiddenError, NotFoundError } from "../helper/errorRespone";
 
 
 class ConfigController {
@@ -28,6 +28,7 @@ class ConfigController {
   }
 
   static async addPermitedFile(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can add permitted file type.");
     const result = await ConfigService.addPermitedFile(req.body);
     return new OK({
       data: result,
@@ -36,6 +37,7 @@ class ConfigController {
   }
 
   static async updatePermitedFile(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can update permitted file type.");
     const result = await ConfigService.updatePermitedFile(req.params.type, req.body);
     return new OK({
       data: result,
@@ -44,6 +46,7 @@ class ConfigController {
   } 
 
   static async deletePermitedFile(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can delete permitted file type.");
     const result = await ConfigService.deletePermitedFile(req.params.type);
     return new OK({
       data: result,
@@ -60,6 +63,7 @@ class ConfigController {
   }
   
   static async updatePageConfig(req: Request, res: Response) {
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can update page config.");
     const result = await ConfigService.updatePageConfig(req.body);
     return new OK({
       data: result,
