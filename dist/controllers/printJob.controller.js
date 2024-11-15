@@ -197,6 +197,25 @@ class PrintJobController {
                     paperSize: req.query.paperSize,
                     startDate: req.query.startDate,
                     endDate: req.query.endDate,
+                    byMonth: (req.query.byMonth == 'true' ? true : false)
+                })
+            }).send(res);
+        });
+    }
+    static getTotalPageOfAll(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::getTotalPageOfAll", req.query);
+            if (req.user.role == "admin") {
+                throw new errorRespone_1.ForbiddenError("Permission denied on getting other user's total page");
+            }
+            return new successResponse_1.OK({
+                message: "Total printed page of user",
+                data: yield printJob_service_1.default.CalculateTotalPage({
+                    userId: "none",
+                    paperSize: req.query.paperSize,
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                    byMonth: (req.query.byMonth == 'true' ? true : false)
                 })
             }).send(res);
         });

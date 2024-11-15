@@ -17,7 +17,7 @@ const errorRespone_1 = require("../helper/errorRespone");
 class PrintingJobModel {
     static getPrintJob(printJobId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const printJob = yield initDatabase_1.default.query("SELECT * FROM printingjob WHERE id::text = '" + printJobId + "'");
+            const printJob = yield initDatabase_1.default.query("SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE id::text = '" + printJobId + "'");
             if (printJob.rows.length == 0)
                 throw new errorRespone_1.NotFoundError("Can not find this printjob!");
             return printJob.rows[0];
@@ -25,7 +25,7 @@ class PrintingJobModel {
     }
     static getPrintJobByUser(_a) {
         return __awaiter(this, arguments, void 0, function* ({ userId, startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' ";
+            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" + userId + "' ";
             if (startDate != null)
                 query_string += " AND starttime>='" + startDate + "' ";
             if (endDate != null)
@@ -39,7 +39,7 @@ class PrintingJobModel {
     }
     static getPrintJobByPrinter(_a) {
         return __awaiter(this, arguments, void 0, function* ({ printerId, startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob WHERE printerid::text = '" + printerId + "' ";
+            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printerid::text = '" + printerId + "' ";
             if (startDate != null)
                 query_string += " AND starttime >= '" + startDate + "' ";
             if (endDate != null)
@@ -53,7 +53,7 @@ class PrintingJobModel {
     }
     static getPrintJobByUserAndPrinter(_a) {
         return __awaiter(this, arguments, void 0, function* ({ userId, printerId, startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' AND printerid::text = '" + printerId + "' ";
+            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid  WHERE userid::text = '" + userId + "' AND printerid::text = '" + printerId + "' ";
             if (startDate != null)
                 query_string += " AND starttime >= '" + startDate + "' ";
             if (endDate != null)
@@ -67,7 +67,7 @@ class PrintingJobModel {
     }
     static getPrintJobByDuration(_a) {
         return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob";
+            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid";
             if (startDate != null) {
                 query_string += " WHERE starttime >= '" + startDate + "' ";
                 if (endDate != null)

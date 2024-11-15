@@ -14,34 +14,51 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 const errorRespone_1 = require("../helper/errorRespone");
-class PrinterModel {
-    static findAllPrinter(_a) {
+class LocationModel {
+    static getAllLocation(_a) {
         return __awaiter(this, arguments, void 0, function* ({ offset, limit }) {
             const result = yield initDatabase_1.default.query(`
-      SELECT * FROM PRINTER
+      SELECT * 
+      FROM LOCATION
       LIMIT $1 OFFSET $2;`, [limit, offset]);
             return result.rows;
         });
     }
-    static findPrinterByID(printerID_1, _a) {
-        return __awaiter(this, arguments, void 0, function* (printerID, { offset, limit }) {
+    static getLocation(data_1, _a) {
+        return __awaiter(this, arguments, void 0, function* (data, { offset, limit }) {
+            const fields = Object.keys(data);
+            const values = Object.values(data);
+            if (fields.length === 0) {
+                throw new errorRespone_1.BadRequestError("No fields provided to find locations.");
+            }
+            const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
             const result = yield initDatabase_1.default.query(`
-      SELECT * FROM PRINTER 
-      WHERE ID=$1
-      LIMIT $2 OFFSET $3;`, [printerID, limit, offset]);
-            return result.rows[0] || null;
+      SELECT *
+      FROM LOCATION
+      WHERE ${setClauses}
+      LIMIT $${fields.length + 1} OFFSET $${fields.length + 2};`, [...values, limit, offset]);
+            return result.rows;
         });
     }
-    static createPrinter(printer) {
+    static insertLocation(campusname, buildingname, roomnumber) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield initDatabase_1.default.query(`
-      INSERT INTO PRINTER (brand, model, shortdescription, status, locationid)
-      VALUES ($1, $2, $3, $4, $5) 
-      RETURNING *`, [printer.brand, printer.model, printer.shortDescription || null, printer.status, printer.locationId || null]);
+      INSERT INTO LOCATION(campusname, buildingname, roomnumber) 
+      VALUES ($1, $2, $3)
+      RETURNING *;`, [campusname, buildingname, roomnumber]);
             return result.rows[0] || null;
         });
     }
-    static updatePrinter(printerID, data) {
+    static deleteLocation(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield initDatabase_1.default.query(`
+      DELETE FROM LOCATION 
+      WHERE id=$1
+      RETURNING *;`, [id]);
+            return result.rows[0] || null;
+        });
+    }
+    static updateLocation(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
             const fields = Object.keys(data);
             const values = Object.values(data);
@@ -51,21 +68,12 @@ class PrinterModel {
             }
             const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
             const result = yield initDatabase_1.default.query(`
-      UPDATE PRINTER
+      UPDATE LOCATION
       SET ${setClauses}
       WHERE ID = $${fields.length + 1}
-      RETURNING *`, [...values, printerID]);
-            return result.rows[0] || null;
-        });
-    }
-    static deletePrinter(printerID) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const result = yield initDatabase_1.default.query(`
-      DELETE FROM PRINTER
-      WHERE ID = $1
-      RETURNING *`, [printerID]);
+      RETURNING *`, [...values, id]);
             return result.rows[0] || null;
         });
     }
 }
-exports.default = PrinterModel;
+exports.default = LocationModel;

@@ -14,6 +14,7 @@ router.post("/startPrintJob", (0, utils_1.asyncHandler)(printJob_controller_1.de
 router.get("/all", (0, utils_1.asyncHandler)(printJob_controller_1.default.getAllPrintingHistory));
 router.get("/user/:userId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintingHistoryByUser));
 router.get("/printer/:printerId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintingHistoryByPrinter));
+router.get("/totalPage/all", (0, utils_1.asyncHandler)(printJob_controller_1.default.getTotalPageOfAll));
 router.get("/totalPage/:userId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getTotalPage));
 router.get("/totalUser", (0, utils_1.asyncHandler)(printJob_controller_1.default.getTotalUser));
 router.get("/:printjobId", (0, utils_1.asyncHandler)(printJob_controller_1.default.getPrintJob));

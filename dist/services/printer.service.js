@@ -15,18 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const errorRespone_1 = require("../helper/errorRespone");
 const printer_model_1 = __importDefault(require("../model/printer.model"));
 class PrinterService {
-    static getAllPrinter() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const result = yield printer_model_1.default.findAllPrinter();
+    static getAllPrinter(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ offset, limit }) {
+            const result = yield printer_model_1.default.findAllPrinter({ offset, limit });
             return result;
         });
     }
-    static getPrinterByID(printerID) {
-        return __awaiter(this, void 0, void 0, function* () {
+    static getPrinterByID(printerID_1, _a) {
+        return __awaiter(this, arguments, void 0, function* (printerID, { offset, limit }) {
             if (!printerID) {
                 throw new errorRespone_1.BadRequestError("Printer ID is required.");
             }
-            const result = yield printer_model_1.default.findPrinterByID(printerID);
+            const result = yield printer_model_1.default.findPrinterByID(printerID, { offset, limit });
             if (result === null)
                 throw new errorRespone_1.NotFoundError("Cannot find the printer with ID " + printerID);
             return result;

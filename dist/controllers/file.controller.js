@@ -24,7 +24,7 @@ class FileController {
             }
             return new successResponse_1.Created({
                 message: "File uploaded successfully",
-                data: yield file_service_1.default.uploadFile(req.user.id, {
+                data: yield file_service_1.default.uploadFile("1211d02a-df15-4365-9119-ef6371bdcd79", {
                     originalname: req.file.originalname,
                     buffer: req.file.buffer,
                     mimetype: req.file.mimetype
@@ -44,6 +44,8 @@ class FileController {
             }).send(res);
         });
     }
+    // authenticate token
+    // if(req.body.userRole == "admin")
     static deleteFile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("FileController::deleteFile", req.body);

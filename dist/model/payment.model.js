@@ -14,9 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 class PaymentModel {
-    static getAllPayment() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const result = yield initDatabase_1.default.query(`SELECT * FROM PAYMENT;`);
+    static getAllPayment(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ offset, limit }) {
+            const result = yield initDatabase_1.default.query(`
+      SELECT * FROM PAYMENT
+      LIMIT $1 OFFSET $2;`, [limit, offset]);
             return result.rows;
         });
     }
@@ -27,6 +29,16 @@ class PaymentModel {
       VALUES ($1, $2)
       RETURNING *;`, [user_id, amount]);
             return result.rows[0] || null;
+        });
+    }
+    static getPaymentByUserID(user_id_1, _a) {
+        return __awaiter(this, arguments, void 0, function* (user_id, { offset, limit }) {
+            const result = yield initDatabase_1.default.query(`
+      SELECT *
+      FROM PAYMENT 
+      WHERE user_id=$1
+      LIMIT $2 OFFSET $3;`, [user_id, limit, offset]);
+            return result.rows;
         });
     }
 }
