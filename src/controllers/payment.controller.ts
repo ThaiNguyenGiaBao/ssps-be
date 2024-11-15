@@ -20,7 +20,7 @@ class PaymentController {
   }
 
   static async insertPayment(req: Request, res: Response) {
-    // if(req.user.role != "admin") throw new ForbiddenError("Only admin can insert payment."); ???
+    if(req.user.role != "admin") throw new ForbiddenError("Only admin can insert payment."); 
     const userBalance = await UserService.getUserBalance(req.body.user_id);
     const result = await PaymentService.insertPayment(req.body.user_id, req.body.amount);
     const updatedUser = await UserService.updateUserBalance(req.body.user_id, userBalance + req.body.amount);
@@ -38,17 +38,15 @@ class PaymentController {
   }
 
   static async getPaymentByUserID(req: Request, res: Response) {
-    if(req.user.role != "admin") throw new ForbiddenError("Only admin can get payment by user ID.");
-
     const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
     const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
     const offset = (page - 1) * limit;
 
-    const result = await PaymentService.getPaymentByUserID(req.body.user_id, { offset, limit });
+    const result = await PaymentService.getPaymentByUserID(req.params.user_id, { offset, limit });
     return new OK({
       data: result,
       message: "Get payment by user ID successfully."
-    })
+    }).send(res);
   }
 }
 
