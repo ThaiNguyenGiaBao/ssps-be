@@ -39,6 +39,11 @@ class FileModel {
         return file.rows[0];
     }
 
+    static async softDeleteFile(fileId: string) {
+        const file = await db.query("UPDATE file SET isDeleted = true WHERE id = $1 RETURNING *", [fileId]);
+        return file.rows[0];
+    }
+
     static async getFileById(fileId: string) {
         const file = await db.query("SELECT * FROM file WHERE id = $1", [fileId]);
         return file.rows[0];

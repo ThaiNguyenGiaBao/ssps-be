@@ -84,8 +84,9 @@ class FileService {
         if (!file) {
             throw new NotFoundError("File not found");
         }
+        return await FileModel.softDeleteFile(fileId);
 
-        return await FileModel.deleteFile(fileId);
+        //return await FileModel.deleteFile(fileId);
     }
 }
 
