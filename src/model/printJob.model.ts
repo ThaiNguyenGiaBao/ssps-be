@@ -69,6 +69,22 @@ class PrintingJobModel {
         return allPrintJob.rows;
     }
 
+    static async getPrintJobType({startDate, endDate}: {startDate: string, endDate: string}) {
+        let query_string = "SELECT DISTINCT file.id, type FROM file INNER JOIN printingjob ON file.id = printingjob.fileid ";
+        if(startDate != null) {
+            query_string += " WHERE starttime >= '"+ startDate + "' ";
+            if(endDate != null) query_string += " AND starttime <= '"+ endDate + "' ";
+        }
+        else if(endDate != null) query_string += " WHERE starttime <= '"+ endDate + "' ";
+
+        // query_string += "ORDER BY starttime DESC ";
+        // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+        //     query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
+        
+        const allPrintJob = await db.query(query_string);
+        return allPrintJob.rows;
+    }
+
     static async deletePrintJob(printJobId: string) {
         const DeleteExistPrintJob = await db.query("DELETE FROM printingjob WHERE id::text = $1", [printJobId]);
     }

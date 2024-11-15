@@ -5,6 +5,14 @@ import db from "../dbs/initDatabase";
 import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 
 class PrintingJobService {
+    static async checkDate({startDate, endDate}: {startDate: string, endDate: string}) {
+        if(startDate != null && endDate!= null) {
+            let checkStartDate = isNaN(Date.parse(startDate));
+            let checkEndDate = isNaN(Date.parse(endDate));
+            if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
+        }
+    }
+
     static async getPrintJob(printJobId: string) {
         if(printJobId == null) throw new BadRequestError("printJobId is null");
         let printJob = await PrintJobModel.getPrintJob(printJobId);
@@ -27,12 +35,7 @@ class PrintingJobService {
         if(userId == null) throw new BadRequestError("userId is null");
         if(printerId == null) throw new BadRequestError("printerId is null");
 
-        if(startDate != null && endDate!= null) {
-            let checkStartDate = isNaN(Date.parse(startDate));
-            let checkEndDate = isNaN(Date.parse(endDate));
-
-            if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
-        }
+        this.checkDate({startDate: startDate, endDate: endDate});
 
         if(!Number.isInteger(PageNum) || PageNum < 0) 
             throw new BadRequestError("Pagination: displayPage is invalid");
@@ -180,14 +183,7 @@ class PrintingJobService {
                                   {userId: string, paperSize: string, startDate: string, endDate: string, byMonth: boolean}) {
 
         if (userId == null) throw new BadRequestError("Invalid parameter for CalculateTotalPage");
-
-        if(startDate != null && endDate!= null) {
-            let checkStartDate = isNaN(Date.parse(startDate));
-            let checkEndDate = isNaN(Date.parse(endDate));
-
-            if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
-        }
-
+        this.checkDate({startDate: startDate, endDate: endDate});
         if(userId != "none") await UserService.getUser(userId); // Check if user's exist
 
         let allPrintjob;
@@ -234,14 +230,9 @@ class PrintingJobService {
         }
     }
 
-    static async CalculateTotalUser({startDate, endDate}: {startDate: string, endDate: string}) {
+    static async CalculateTotalUser({startDate, endDate, byMonth}: {startDate: string, endDate: string, byMonth: boolean}) {
 
-        if(startDate != null && endDate!= null) {
-            let checkStartDate = isNaN(Date.parse(startDate));
-            let checkEndDate = isNaN(Date.parse(endDate));
-
-            if(checkStartDate || checkEndDate) throw new BadRequestError("Date format is wrong");
-        }
+        this.checkDate({startDate: startDate, endDate: endDate});
 
         let allPrintjob = await PrintJobModel.getPrintJobByDuration({
             startDate: startDate,
@@ -250,9 +241,115 @@ class PrintingJobService {
             itemPerPage: 100
         });
 
-        let user = new Set();
-        for (let i in allPrintjob) user.add(allPrintjob[i].userid);
-        return user.size;
+        if(byMonth) {
+            let res = []
+            let prv_month = 'none'
+            let user = new Set();
+            for (let i in allPrintjob) {
+                let month = (new Date(allPrintjob[i].starttime)).toISOString().slice(0,7)
+                if(prv_month != month && prv_month!='none') {
+                    res.push({month: prv_month, totalUser: user.size})
+                    user = new Set()                
+                }
+
+                prv_month = month
+                user.add(allPrintjob[i].userid);
+            }
+            res.push({month: prv_month, totalUser: user.size})
+            return res;
+        }
+        else {
+            let user = new Set();
+            for (let i in allPrintjob) user.add(allPrintjob[i].userid);
+            return user.size;
+        }
+    }
+
+    static async totalFilebyType({startDate, endDate, types}: {startDate: string, endDate: string, types: string}) {
+        
+        this.checkDate({startDate: startDate, endDate: endDate});
+        
+        const type_list = types.split(",")
+        let mp = new Map<string, number>();
+
+        for (let i in type_list) mp.set(type_list[i], 0)
+        
+        let allPrintjob = await PrintJobModel.getPrintJobType({
+            startDate: startDate,
+            endDate: endDate,
+        });
+
+        for (let i in allPrintjob) {
+            for (let j in type_list) {
+                let file_type = allPrintjob[i].type
+                if(file_type.includes(type_list[j])) {
+                    let cr = mp.get(type_list[j])
+                    mp.set(type_list[j], (cr?cr:0)+1 );
+                }
+            }
+        }
+        
+        let res = []
+        for (let i in type_list) res.push({type: type_list[i], totalFile: mp.get(type_list[i])})
+        return res;
+    }
+
+    static async printerUsageFrequency({printerId, startDate, endDate}: {printerId: string, startDate: string, endDate: string}) {
+        
+        this.checkDate({startDate: startDate, endDate: endDate});
+        
+        let allPrintjob = await PrintJobModel.getPrintJobByPrinter({
+            printerId:  printerId, 
+            startDate:  startDate, 
+            endDate:    endDate,
+            PageNum:    0,
+            itemPerPage: 100
+        });
+
+        let mp = new Map<string, number>();
+        for (let i in allPrintjob) {
+            let printJob = allPrintjob[i];
+            if (printJob.status != "success") continue;
+            let day = (new Date(printJob.starttime)).toISOString().slice(0,10)
+            let cr = mp.get(day);
+            mp.set(day, (cr?cr:0) + 1);
+        }
+
+        let result = []
+        for (let key of mp.keys()) {
+            result.push({
+                date: key,
+                usageCount: mp.get(key)
+            })
+        }
+        return result
+    }
+
+    static async getFilePrintRequestFrequency({startDate, endDate}: {startDate: string, endDate: string}) {
+        this.checkDate({startDate: startDate, endDate: endDate});
+
+        let allPrintjob = await PrintJobModel.getPrintJobByDuration({
+            startDate: startDate,
+            endDate: endDate,
+            PageNum: 0,
+            itemPerPage: 100
+        });
+
+        let mp = new Map<string, number>();
+        for (let i in allPrintjob) {
+            let day = (new Date(allPrintjob[i].starttime)).toISOString().slice(0,10)
+            let cr = mp.get(day);
+            mp.set(day, (cr?cr:0) + 1);
+        }
+
+        let result = []
+        for (let key of mp.keys()) {
+            result.push({
+                date: key,
+                filePrintRequests: mp.get(key)
+            })
+        }
+        return result
     }
 }
 
