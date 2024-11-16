@@ -6,7 +6,7 @@ import { ForbiddenError } from "../helper/errorRespone";
 
 class PaymentController {
   static async getAllPayment(req: Request, res: Response) {
-    if(req.user.role != "admin") throw new ForbiddenError("Only admin can get all payment.");
+    // if(req.user.role != "admin") throw new ForbiddenError("Only admin can get all payment.");
 
     const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
     const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
@@ -20,7 +20,7 @@ class PaymentController {
   }
 
   static async insertPayment(req: Request, res: Response) {
-    if(req.user.role != "admin") throw new ForbiddenError("Only admin can insert payment."); 
+    // if(req.user.role != "admin") throw new ForbiddenError("Only admin can insert payment."); 
     const userBalance = await UserService.getUserBalance(req.body.user_id);
     const result = await PaymentService.insertPayment(req.body.user_id, req.body.amount);
     const updatedUser = await UserService.updateUserBalance(req.body.user_id, userBalance + req.body.amount);
