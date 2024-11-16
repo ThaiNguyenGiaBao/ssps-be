@@ -232,6 +232,54 @@ class PrintJobController {
                 data: yield printJob_service_1.default.CalculateTotalUser({
                     startDate: req.query.startDate,
                     endDate: req.query.endDate,
+                    byMonth: (req.query.byMonth == 'true' ? true : false)
+                })
+            }).send(res);
+        });
+    }
+    static getTotalFilebyType(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::totalFilebyType", req.params, req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Only admin can get total file");
+            }
+            return new successResponse_1.OK({
+                message: "Total File by Type",
+                data: yield printJob_service_1.default.totalFilebyType({
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                    types: req.query.types
+                })
+            }).send(res);
+        });
+    }
+    static getPrinterUsageFrequency(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::printerUsageFrequency", req.params, req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Only admin can Printer usage frequency by day");
+            }
+            return new successResponse_1.OK({
+                message: "Printer usage frequency by day",
+                data: yield printJob_service_1.default.printerUsageFrequency({
+                    printerId: req.params.printerId,
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                })
+            }).send(res);
+        });
+    }
+    static getFilePrintRequestFrequency(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::getFilePrintRequestFrequency", req.params, req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Only admin can getFilePrintRequestFrequency");
+            }
+            return new successResponse_1.OK({
+                message: "File print request frequency by day",
+                data: yield printJob_service_1.default.getFilePrintRequestFrequency({
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
                 })
             }).send(res);
         });

@@ -29,4 +29,7 @@ db.connect()
     .catch((err) => {
     console.error("Connection error", err.stack);
 });
+setInterval(() => {
+    db.connect();
+}, 60000);
 exports.default = db;

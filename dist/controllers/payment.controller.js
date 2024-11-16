@@ -33,8 +33,7 @@ class PaymentController {
     }
     static insertPayment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (req.user.role != "admin")
-                throw new errorRespone_1.ForbiddenError("Only admin can insert payment.");
+            //if(req.user.role != "admin") throw new ForbiddenError("Only admin can insert payment."); 
             const userBalance = yield user_service_1.default.getUserBalance(req.body.user_id);
             const result = yield payment_service_1.default.insertPayment(req.body.user_id, req.body.amount);
             const updatedUser = yield user_service_1.default.updateUserBalance(req.body.user_id, userBalance + req.body.amount);

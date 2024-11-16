@@ -11,5 +11,5 @@ const router = express_1.default.Router();
 router.use((0, utils_1.asyncHandler)(auth_middlewares_1.authenticateToken));
 router.get("/", (0, utils_1.asyncHandler)(payment_controller_1.default.getAllPayment));
 router.get("/:user_id", (0, utils_1.asyncHandler)(payment_controller_1.default.getPaymentByUserID));
-router.post("", (0, utils_1.asyncHandler)(payment_controller_1.default.insertPayment));
+router.post("/", (0, utils_1.asyncHandler)(payment_controller_1.default.insertPayment));
 exports.default = router;

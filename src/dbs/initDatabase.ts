@@ -26,4 +26,8 @@ db.connect()
         console.error("Connection error", err.stack);
     });
 
+setInterval(() => {
+    db.connect();
+}, 60000);
+
 export default db;
