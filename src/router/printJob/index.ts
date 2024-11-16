@@ -17,6 +17,9 @@ router.get("/printer/:printerId", asyncHandler(PrintingController.getPrintingHis
 router.get("/totalPage/all", asyncHandler(PrintingController.getTotalPageOfAll));
 router.get("/totalPage/:userId", asyncHandler(PrintingController.getTotalPage));
 router.get("/totalUser", asyncHandler(PrintingController.getTotalUser));
+router.get("/totalFilebyType", asyncHandler(PrintingController.getTotalFilebyType));
+router.get("/filePrintRequestFrequency", asyncHandler(PrintingController.getFilePrintRequestFrequency));
+router.get("/printerUsageFrequency/:printerId", asyncHandler(PrintingController.getPrinterUsageFrequency));
 
 router.get("/:printjobId", asyncHandler(PrintingController.getPrintJob));
 

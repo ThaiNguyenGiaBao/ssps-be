@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { OK, Created } from "../helper/successResponse";
 import { BadRequestError, ForbiddenError, PaymentRequired } from "../helper/errorRespone";
 import ReportService from "../services/report.service";
+import { start } from "repl";
 
 class PrintJobController {
     
@@ -234,11 +235,58 @@ class PrintJobController {
         if(req.user.role != "admin") {
             throw new ForbiddenError("Only admin can get total number of user");
         }
-        
                 
         return new OK({
             message: "Total user",
             data: await PrintJobService.CalculateTotalUser({
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+                byMonth:    (req.query.byMonth == 'true'? true: false)
+            })
+        }).send(res);
+    }
+
+    static async getTotalFilebyType(req: Request, res: Response) {
+        console.log("PrintJobController::totalFilebyType", req.params, req.query);
+        if(req.user.role != "admin") {
+            throw new ForbiddenError("Only admin can get total file");
+        }
+        
+        return new OK({
+            message: "Total File by Type",
+            data: await PrintJobService.totalFilebyType({
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+                types:      req.query.types as string
+            })
+        }).send(res);
+    }
+
+    static async getPrinterUsageFrequency(req: Request, res: Response) {
+        console.log("PrintJobController::printerUsageFrequency", req.params, req.query);
+        if(req.user.role != "admin") {
+            throw new ForbiddenError("Only admin can Printer usage frequency by day");
+        }
+
+        return new OK({
+            message: "Printer usage frequency by day",
+            data: await PrintJobService.printerUsageFrequency({
+                printerId:  req.params.printerId,
+                startDate:  req.query.startDate as string,
+                endDate:    req.query.endDate as string, 
+            })
+        }).send(res);
+    }
+
+    static async getFilePrintRequestFrequency(req: Request, res: Response) {
+        console.log("PrintJobController::getFilePrintRequestFrequency", req.params, req.query);
+        if(req.user.role != "admin") {
+            throw new ForbiddenError("Only admin can getFilePrintRequestFrequency");
+        }
+
+        return new OK({
+            message: "File print request frequency by day",
+            data: await PrintJobService.getFilePrintRequestFrequency({
                 startDate:  req.query.startDate as string,
                 endDate:    req.query.endDate as string, 
             })
