@@ -27,7 +27,8 @@ db.connect()
     });
 
 setInterval(() => {
-    db.connect();
+    db.query("SELECT * FROM users");
+    console.log("Query DBS...")
 }, 60000);
 
 export default db;
