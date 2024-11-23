@@ -4,7 +4,7 @@ import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 class PrintingJobModel {
     static async getPrintJob(printJobId: string) {
         const printJob = await db.query(
-            "SELECT * FROM printingjob  JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printingjob.id::text = '" +
+            "SELECT *, printingjob.id FROM printingjob  JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printingjob.id::text = '" +
                 printJobId +
                 "'"
         );

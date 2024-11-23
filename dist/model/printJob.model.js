@@ -17,7 +17,7 @@ const errorRespone_1 = require("../helper/errorRespone");
 class PrintingJobModel {
     static getPrintJob(printJobId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const printJob = yield initDatabase_1.default.query("SELECT * FROM printingjob  JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printingjob.id::text = '" +
+            const printJob = yield initDatabase_1.default.query("SELECT *, printingjob.id FROM printingjob  JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printingjob.id::text = '" +
                 printJobId +
                 "'");
             if (printJob.rows.length == 0)
