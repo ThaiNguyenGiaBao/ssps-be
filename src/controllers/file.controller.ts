@@ -13,7 +13,7 @@ class FileController {
 
         return new Created({
             message: "File uploaded successfully",
-            data: await FileService.uploadFile("1211d02a-df15-4365-9119-ef6371bdcd79", {
+            data: await FileService.uploadFile(req.user.id, {
                 originalname: req.file.originalname,
                 buffer: req.file.buffer,
                 mimetype: req.file.mimetype
@@ -53,7 +53,7 @@ class FileController {
     //router.get("/", asyncHandler(FileController.getAllFiles));
     static async getAllFiles(req: Request, res: Response) {
         console.log("FileController::getAllFiles");
-        
+
         if (req.user.role != "admin") {
             throw new ForbiddenError("Permission denied on getting all files");
         }
@@ -63,7 +63,7 @@ class FileController {
 
         return new OK({
             message: "Get all files successfully",
-            data: await FileService.getAllFiles({page, limit})
+            data: await FileService.getAllFiles({ page, limit })
         }).send(res);
     }
 
