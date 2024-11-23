@@ -65,7 +65,7 @@ class FileService {
         const file = await FileModel.getFileByUserId(userId);
 
         if (file.length === 0) {
-            throw new NotFoundError("File not found");
+            return [];
         }
         return file;
     }

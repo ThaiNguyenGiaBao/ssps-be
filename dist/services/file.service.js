@@ -80,7 +80,7 @@ class FileService {
             }
             const file = yield file_model_1.default.getFileByUserId(userId);
             if (file.length === 0) {
-                throw new errorRespone_1.NotFoundError("File not found");
+                return [];
             }
             return file;
         });
