@@ -6,7 +6,7 @@ import { ForbiddenError } from "../helper/errorRespone";
 
 class PaymentController {
   static async getAllPayment(req: Request, res: Response) {
-    if(req.user.role != "admin") throw new ForbiddenError("Only admin can get all payment.");
+    // if(req.user.role != "admin") throw new ForbiddenError("Only admin can get all payment.");
 
     const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
     const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page

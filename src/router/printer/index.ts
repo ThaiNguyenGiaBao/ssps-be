@@ -12,6 +12,7 @@ router.use(asyncHandler(authenticateToken));
 router.post("/", asyncHandler(PrinterController.addPrinter));
 
 
+router.post("/", asyncHandler(PrinterController.addPrinter));
 router.delete("/:id", asyncHandler(PrinterController.removePrinter));
 router.patch("/:id", asyncHandler(PrinterController.updatePrinter));
 
