@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.get("/", asyncHandler(PrinterController.getAllPrinter));
 router.get("/:id", asyncHandler(PrinterController.getPrinterByID));
+
 router.use(asyncHandler(authenticateToken));
 router.post("/", asyncHandler(PrinterController.addPrinter));
 
