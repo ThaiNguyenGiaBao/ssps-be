@@ -12,6 +12,7 @@ router.get("/", (0, utils_1.asyncHandler)(printer_controller_1.default.getAllPri
 router.get("/:id", (0, utils_1.asyncHandler)(printer_controller_1.default.getPrinterByID));
 router.use((0, utils_1.asyncHandler)(auth_middlewares_1.authenticateToken));
 router.post("/", (0, utils_1.asyncHandler)(printer_controller_1.default.addPrinter));
+router.post("/", (0, utils_1.asyncHandler)(printer_controller_1.default.addPrinter));
 router.delete("/:id", (0, utils_1.asyncHandler)(printer_controller_1.default.removePrinter));
 router.patch("/:id", (0, utils_1.asyncHandler)(printer_controller_1.default.updatePrinter));
 exports.default = router;

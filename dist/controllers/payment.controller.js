@@ -15,12 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const successResponse_1 = require("../helper/successResponse");
 const payment_service_1 = __importDefault(require("../services/payment.service"));
 const user_service_1 = __importDefault(require("../services/user.service"));
-const errorRespone_1 = require("../helper/errorRespone");
 class PaymentController {
     static getAllPayment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (req.user.role != "admin")
-                throw new errorRespone_1.ForbiddenError("Only admin can get all payment.");
+            // if(req.user.role != "admin") throw new ForbiddenError("Only admin can get all payment.");
             const page = parseInt(req.query.page, 10) || 1; // Default to page 1
             const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
             const offset = (page - 1) * limit;
