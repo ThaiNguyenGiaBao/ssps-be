@@ -27,7 +27,7 @@ class PrintingJobModel {
     }
     static getPrintJobByUser(_a) {
         return __awaiter(this, arguments, void 0, function* ({ userId, startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" +
+            let query_string = "SELECT *, printingjob.id FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" +
                 userId +
                 "' ";
             if (startDate != null)

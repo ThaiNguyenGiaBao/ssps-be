@@ -26,7 +26,7 @@ class PrintingJobModel {
         itemPerPage: number;
     }) {
         let query_string =
-            "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" +
+            "SELECT *, printingjob.id FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" +
             userId +
             "' ";
         if (startDate != null) query_string += " AND starttime>='" + startDate + "' ";
