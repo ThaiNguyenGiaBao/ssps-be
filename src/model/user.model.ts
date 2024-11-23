@@ -5,6 +5,7 @@ class AccessModel {
         const user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
         return user.rows[0];
     }
+    
     static async createUser({
         email,
         username,

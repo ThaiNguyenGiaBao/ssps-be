@@ -15,6 +15,7 @@ router.get("/", (req: Request, res: Response) => {
     res.json({ message: "Hello World" });
 });
 router.use("/api/auth", AccessRouter);
+// /api/auth/signup
 
 router.use("/api/printjob", PrintingRouter);
 

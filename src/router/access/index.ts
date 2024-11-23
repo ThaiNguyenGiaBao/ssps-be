@@ -9,6 +9,7 @@ router.post("/signin", asyncHandler(AccessController.SignIn));
 
 router.use(asyncHandler(authenticateToken));
 
+// /api/auth/
 router.get("/", (req, res) => {
     res.json({ message: "Hello World" });
 });

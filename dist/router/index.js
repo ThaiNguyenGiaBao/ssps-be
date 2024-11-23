@@ -18,6 +18,7 @@ router.get("/", (req, res) => {
     res.json({ message: "Hello World" });
 });
 router.use("/api/auth", access_1.default);
+// /api/auth/signup
 router.use("/api/printjob", printJob_1.default);
 router.use("/api/user", user_1.default);
 router.use("/api/file", file_1.default);
