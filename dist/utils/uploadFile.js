@@ -35,7 +35,7 @@ function uploadFile(file) {
         }
         catch (error) {
             console.error("Upload error:", error.message);
-            throw new Error("File upload error:" + error.message);
+            throw new Error(error.message);
         }
     });
 }

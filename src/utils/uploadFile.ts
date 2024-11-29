@@ -30,7 +30,7 @@ async function uploadFile(file: FileObject) {
         return downloadURL; // Return the download URL
     } catch (error: any) {
         console.error("Upload error:", error.message);
-        throw new Error("File upload error:" + error.message);
+        throw new Error(error.message);
     }
 }
 
