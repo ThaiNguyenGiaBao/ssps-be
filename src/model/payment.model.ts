@@ -21,6 +21,34 @@ class PaymentModel {
       RETURNING *;`, [user_id, amount]);
     return result.rows[0] || null;
   }
+  static async getPaymentByTime (startTime: string | null, endTime: string | null, { offset, limit } : {offset: number, limit: number}) {
+    if (!startTime && !endTime)
+      return this.getAllPayment({ offset, limit });
+    
+    let result = null;
+    if (!endTime)
+      result = await db.query(`
+        SELECT * 
+        FROM public.payment 
+        WHERE timestamp >= $1 
+        ORDER BY timestamp;
+      `, [startTime]);
+    else if (!startTime)
+      result = await db.query(`
+        SELECT * 
+        FROM public.payment 
+        WHERE timestamp <= $1 
+        ORDER BY timestamp;
+      `, [endTime]);
+    else
+      result = await db.query(`
+        SELECT * 
+        FROM payment 
+        WHERE timestamp BETWEEN $1 AND $2 
+        ORDER BY timestamp;
+      `, [startTime, endTime]);
+    return result.rows;
+  }
   static async getPaymentByUserID (user_id: string, { offset, limit }: {offset: number, limit: number}) {
     const result = await db.query(`
       SELECT *
