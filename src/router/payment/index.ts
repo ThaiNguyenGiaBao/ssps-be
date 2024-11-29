@@ -5,7 +5,7 @@ import PaymentController from "../../controllers/payment.controller";
 const router = express.Router();
 
 // router.use(asyncHandler(authenticateToken));
-router.get("/", asyncHandler(PaymentController.getAllPayment));
+router.get("/", asyncHandler(PaymentController.getPaymentByTime));
 router.get("/:user_id", asyncHandler(PaymentController.getPaymentByUserID))
 router.post("", asyncHandler(PaymentController.insertPayment));
 
