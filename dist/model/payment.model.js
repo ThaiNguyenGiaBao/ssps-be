@@ -31,6 +31,35 @@ class PaymentModel {
             return result.rows[0] || null;
         });
     }
+    static getPaymentByTime(startTime_1, endTime_1, _a) {
+        return __awaiter(this, arguments, void 0, function* (startTime, endTime, { offset, limit }) {
+            if (!startTime && !endTime)
+                return this.getAllPayment({ offset, limit });
+            let result = null;
+            if (!endTime)
+                result = yield initDatabase_1.default.query(`
+        SELECT * 
+        FROM public.payment 
+        WHERE timestamp >= $1 
+        ORDER BY timestamp;
+      `, [startTime]);
+            else if (!startTime)
+                result = yield initDatabase_1.default.query(`
+        SELECT * 
+        FROM public.payment 
+        WHERE timestamp <= $1 
+        ORDER BY timestamp;
+      `, [endTime]);
+            else
+                result = yield initDatabase_1.default.query(`
+        SELECT * 
+        FROM payment 
+        WHERE timestamp BETWEEN $1 AND $2 
+        ORDER BY timestamp;
+      `, [startTime, endTime]);
+            return result.rows;
+        });
+    }
     static getPaymentByUserID(user_id_1, _a) {
         return __awaiter(this, arguments, void 0, function* (user_id, { offset, limit }) {
             const result = yield initDatabase_1.default.query(`
