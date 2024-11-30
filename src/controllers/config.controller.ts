@@ -8,11 +8,16 @@ import { ForbiddenError, NotFoundError } from "../helper/errorRespone";
 
 class ConfigController {
   static async getConfigSettings(req: Request, res: Response) {
-    let permitedFiles: PermitedFile[] = await ConfigService.getPermitedFile();
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const offset = (page - 1) * limit;
+
+    let result = await ConfigService.getPermitedFile({offset, limit});
     let config: Config  = await ConfigService.getPageConfig();
     return new OK({
       data: {
-        "permitedFiles": permitedFiles,
+        "permitedFiles": result.data,
+        "meta": result.meta,
         "config": config
       } ,
       message: "Get configuration successfully!"
@@ -20,7 +25,11 @@ class ConfigController {
   }
 
   static async getPermitedFile(req: Request, res: Response) {
-    const result = await ConfigService.getPermitedFile();
+    const page = parseInt(req.query.page as string, 10) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit as string, 10) || 10; // Default to 10 items per page
+    const offset = (page - 1) * limit;
+
+    const result = await ConfigService.getPermitedFile({offset, limit});
     return new OK({
       data: result,
       message: "Get permited file types successfully!"

@@ -24,8 +24,7 @@ class LocationController {
       result = await LocationService.getLocation(location, {offset, limit});
     return new OK({
       data: result,
-      message: result.length === 0? "No location found" : 
-        "Get locations successfully"
+      message: "Get locations successfully"
     }).send(res);
   }
 

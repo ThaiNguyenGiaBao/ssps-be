@@ -3,18 +3,19 @@ import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } f
 
 import { Printer } from "../model/printer.model";
 import PrinterModel from "../model/printer.model";
+import { checkUUID } from "../utils";
 
 class PrinterService {
-  static async getAllPrinter({offset, limit}: {offset: number, limit: number}): Promise<Printer[]> {
-    const result: Printer[] = await PrinterModel.findAllPrinter({offset, limit});
+  static async getAllPrinter({offset, limit}: {offset: number, limit: number}) {
+    const result = await PrinterModel.findAllPrinter({offset, limit});
     return result;
   }
 
-  static async getPrinterByID(printerID: string, { offset, limit }: { offset: number; limit: number}): Promise<Printer> {
+  static async getPrinterByID(printerID: string): Promise<Printer> {
     if (!printerID) {
       throw new BadRequestError("Printer ID is required.")
     }
-    const result: Printer | null = await PrinterModel.findPrinterByID(printerID, {offset, limit});
+    const result: Printer | null = await PrinterModel.findPrinterByID(printerID);
     if (result === null) 
       throw new NotFoundError("Cannot find the printer with ID " + printerID)
     return result;
@@ -32,6 +33,10 @@ class PrinterService {
     // Check for invalid type
     if (printer.status !== "enabled" && printer.status !== "disabled")
       throw new BadRequestError("Printer status must be 'enabled' or 'disabled'");
+
+    if (printer.locationId && checkUUID(printer.locationId)) {
+      throw new BadRequestError("Location ID must be type uuid.");
+    }
 
     const result = await PrinterModel.createPrinter(printer);
     if (result === null)

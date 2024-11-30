@@ -11,18 +11,30 @@ export interface Printer {
 }
 
 export default class PrinterModel {
-  static async findAllPrinter({ offset, limit }: { offset: number, limit: number}): Promise<Printer[]> {
+  static async findAllPrinter({ offset, limit }: { offset: number, limit: number}) {
     const result = await db.query(`
       SELECT * FROM PRINTER
       LIMIT $1 OFFSET $2;`, [limit, offset]);
-    return result.rows; 
+    
+    const countQuery = await db.query(`SELECT COUNT(*) AS total FROM printer`);
+    const totalItems = countQuery.rows[0].total;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: result.rows,
+      meta: {
+        totalPages,
+        totalItems,
+        currentPage: offset/limit + 1,
+        perPage: limit
+      }
+    }; 
   }
 
-  static async findPrinterByID(printerID: string, {offset, limit}: {offset: number, limit: number}): Promise<Printer | null> {
+  static async findPrinterByID(printerID: string): Promise<Printer | null> {
     const result = await db.query(`
       SELECT * FROM PRINTER 
-      WHERE ID=$1
-      LIMIT $2 OFFSET $3;`, [printerID, limit, offset]);
+      WHERE ID=$1;`, [printerID]);
     return result.rows[0] || null;
   }
 

@@ -3,12 +3,12 @@ import LocationModel from "../model/location.model";
 import { Location } from "../model/location.model";
 
 class LocationService {
-  static async getAllLocation({offset, limit}: {offset: number, limit: number}): Promise<Location[]>  {
+  static async getAllLocation({offset, limit}: {offset: number, limit: number})  {
     const result = await LocationModel.getAllLocation({offset, limit});
     return result;
   }
 
-  static async getLocation(location: Partial<Location>, {offset, limit}: {offset: number, limit: number}): Promise<Location[]>  {
+  static async getLocation(location: Partial<Location>, {offset, limit}: {offset: number, limit: number})  {
     if (!(location.buildingname || location.campusname || location.roomnumber || location.id)) 
       throw new BadRequestError(
         "One of four attributes (buildingname, campusname, roomnumber, id) must be given."
