@@ -25,6 +25,7 @@ class PrintingJobModel {
         PageNum: number;
         itemPerPage: number;
     }) {
+        //console.log("mememe");
         let query_string =
             "SELECT *, printingjob.id FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" +
             userId +
@@ -54,7 +55,7 @@ class PrintingJobModel {
         itemPerPage: number;
     }) {
         let query_string =
-            "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printerid::text = '" +
+            "SELECT *,printingjob.id  FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printerid::text = '" +
             printerId +
             "' ";
         if (startDate != null) query_string += " AND starttime >= '" + startDate + "' ";
@@ -84,7 +85,7 @@ class PrintingJobModel {
         itemPerPage: number;
     }) {
         let query_string =
-            "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid  WHERE userid::text = '" +
+            "SELECT *,printingjob.id  FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid  WHERE userid::text = '" +
             userId +
             "' AND printerid::text = '" +
             printerId +
@@ -111,7 +112,7 @@ class PrintingJobModel {
         PageNum: number;
         itemPerPage: number;
     }) {
-        let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid";
+        let query_string = "SELECT *,printingjob.id FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid";
         if (startDate != null) {
             query_string += " WHERE starttime >= '" + startDate + "' ";
             if (endDate != null) query_string += " AND starttime <= '" + endDate + "' ";

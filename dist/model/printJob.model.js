@@ -27,6 +27,7 @@ class PrintingJobModel {
     }
     static getPrintJobByUser(_a) {
         return __awaiter(this, arguments, void 0, function* ({ userId, startDate, endDate, PageNum, itemPerPage }) {
+            //console.log("mememe");
             let query_string = "SELECT *, printingjob.id FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" +
                 userId +
                 "' ";
@@ -43,7 +44,7 @@ class PrintingJobModel {
     }
     static getPrintJobByPrinter(_a) {
         return __awaiter(this, arguments, void 0, function* ({ printerId, startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printerid::text = '" +
+            let query_string = "SELECT *,printingjob.id  FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printerid::text = '" +
                 printerId +
                 "' ";
             if (startDate != null)
@@ -59,7 +60,7 @@ class PrintingJobModel {
     }
     static getPrintJobByUserAndPrinter(_a) {
         return __awaiter(this, arguments, void 0, function* ({ userId, printerId, startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid  WHERE userid::text = '" +
+            let query_string = "SELECT *,printingjob.id  FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid  WHERE userid::text = '" +
                 userId +
                 "' AND printerid::text = '" +
                 printerId +
@@ -77,7 +78,7 @@ class PrintingJobModel {
     }
     static getPrintJobByDuration(_a) {
         return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, PageNum, itemPerPage }) {
-            let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid";
+            let query_string = "SELECT *,printingjob.id FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid";
             if (startDate != null) {
                 query_string += " WHERE starttime >= '" + startDate + "' ";
                 if (endDate != null)
