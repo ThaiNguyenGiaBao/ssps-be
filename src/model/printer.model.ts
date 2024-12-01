@@ -1,4 +1,5 @@
 import db from "../dbs/initDatabase";
+import { BadRequestError } from "../helper/errorRespone";
 
 export interface Printer {
   id: string,
@@ -9,23 +10,31 @@ export interface Printer {
   locationId?: string
 }
 
-export interface Location {
-  id: string;             
-  campusName: string;     
-  buildingName: string;  
-  roomNumber: number;      
-}
-
 export default class PrinterModel {
-  static async findAllPrinter(): Promise<Printer[]> {
-    const result = await db.query(`SELECT * FROM PRINTER`);
-    return result.rows; 
+  static async findAllPrinter({ offset, limit }: { offset: number, limit: number}) {
+    const result = await db.query(`
+      SELECT * FROM PRINTER
+      LIMIT $1 OFFSET $2;`, [limit, offset]);
+    
+    const countQuery = await db.query(`SELECT COUNT(*) AS total FROM printer`);
+    const totalItems = countQuery.rows[0].total;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: result.rows,
+      meta: {
+        totalPages,
+        totalItems,
+        currentPage: offset/limit + 1,
+        perPage: limit
+      }
+    }; 
   }
 
   static async findPrinterByID(printerID: string): Promise<Printer | null> {
     const result = await db.query(`
       SELECT * FROM PRINTER 
-      WHERE ID=$1`, [printerID]);
+      WHERE ID=$1;`, [printerID]);
     return result.rows[0] || null;
   }
 
@@ -43,7 +52,7 @@ export default class PrinterModel {
     const values = Object.values(data);
     // Return early if no fields to update
     if (fields.length === 0) {
-      throw new Error("No fields provided to update");
+      throw new BadRequestError("No fields provided to update");
     }
     const setClauses = fields.map((field, index) => `${field} = $${index+1}`).join(', ');
 

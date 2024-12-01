@@ -6,9 +6,26 @@ export interface PermitedFile {
 }
 
 export default class PermitedFileModel {
-  static async findAllPermitedFiles(): Promise<PermitedFile[]> {
-    const result = await db.query("SELECT * FROM permitedfile;");
-    return result.rows;
+  static async findAllPermitedFiles({ offset, limit }: {offset: number, limit: number}) {
+    const result = await db.query(
+      `SELECT * 
+      FROM permitedfile
+      LIMIT $1 OFFSET $2;`,
+      [limit, offset]
+    );
+    const countQuery = await db.query(`SELECT COUNT(*) AS total FROM permitedfile;`);
+    const totalItems = countQuery.rows[0].total;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: result.rows,
+      meta: {
+        totalPages,
+        totalItems,
+        currentPage: offset/limit + 1,
+        perPage: limit
+      }
+    }; 
   }
   static async  addPermitedFile(permitedFile: PermitedFile): Promise<PermitedFile | null> {
     let result;

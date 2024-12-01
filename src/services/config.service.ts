@@ -3,9 +3,9 @@ import ConfigModel, { Config } from "../model/page.model";
 import PermitedFileModel, { PermitedFile } from "../model/permitedFile.model";
 
 export class ConfigService {
-  static async getPermitedFile(): Promise<PermitedFile[]> {
-    const permitedFiles: PermitedFile[] = await PermitedFileModel.findAllPermitedFiles();
-    return permitedFiles
+  static async getPermitedFile({ offset, limit }: {offset: number, limit: number}) {
+    const result= await PermitedFileModel.findAllPermitedFiles({ offset, limit });
+    return result;
   }
 
   static async addPermitedFile(permitedFile: PermitedFile): Promise<PermitedFile> {
