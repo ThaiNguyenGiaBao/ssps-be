@@ -25,11 +25,7 @@ class PrintingJobModel {
         PageNum: number;
         itemPerPage: number;
     }) {
-        //console.log("mememe");
-        let query_string =
-            "SELECT *, printingjob.id FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE userid::text = '" +
-            userId +
-            "' ";
+        let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' ";
         if (startDate != null) query_string += " AND starttime>='" + startDate + "' ";
         if (endDate != null) query_string += " AND starttime<='" + endDate + "' ";
 

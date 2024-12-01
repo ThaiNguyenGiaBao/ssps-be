@@ -122,10 +122,20 @@ class PrintingJobService {
     }
     static savePrintJob(_a) {
         return __awaiter(this, arguments, void 0, function* ({ printerid, userid, fileid, papersize, numpage, numside, numcopy, pagepersheet, colortype, orientation, status }) {
-            if (printerid == null || printerid == null || fileid == null ||
-                papersize == null || numpage <= 0 || numpage == null || (numside != 1 && numside != 2) ||
-                numcopy <= 0 || numcopy == null || pagepersheet <= 0 || pagepersheet == null ||
-                colortype == null || orientation == null || status == null)
+            if (printerid == null ||
+                printerid == null ||
+                fileid == null ||
+                papersize == null ||
+                numpage <= 0 ||
+                numpage == null ||
+                (numside != 1 && numside != 2) ||
+                numcopy <= 0 ||
+                numcopy == null ||
+                pagepersheet <= 0 ||
+                pagepersheet == null ||
+                colortype == null ||
+                orientation == null ||
+                status == null)
                 throw new errorRespone_1.BadRequestError("Invalid parameter for saving printJob");
             const File = yield initDatabase_1.default.query("SELECT * FROM file WHERE id::text = $1", [fileid]);
             if (File.rows.length == 0) {
@@ -135,26 +145,20 @@ class PrintingJobService {
             // TO-DO check if printer is not exist -> wait for printer service
             const DeleteExistPrintJob = yield initDatabase_1.default.query("DELETE FROM printingjob WHERE fileid::text = $1 AND status = 'created'", [fileid]);
             const newPrintjob = yield initDatabase_1.default.query("INSERT INTO printingjob (printerid, userid, fileid, papersize, numpage, numside, numcopy, \
-            pagepersheet, colortype, orientation, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *", [
-                printerid,
-                userid,
-                fileid,
-                papersize,
-                numpage,
-                numside,
-                numcopy,
-                pagepersheet,
-                colortype,
-                orientation,
-                status
-            ]);
+            pagepersheet, colortype, orientation, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *", [printerid, userid, fileid, papersize, numpage, numside, numcopy, pagepersheet, colortype, orientation, status]);
             return newPrintjob.rows[0];
         });
     }
     static CalculatePrice(_a) {
         return __awaiter(this, arguments, void 0, function* ({ papersize, colortype, numpage, numside, pagepersheet, numcopy }) {
-            if (papersize == null || numpage <= 0 || numpage == null || (numside != 1 && numside != 2) ||
-                numcopy <= 0 || numcopy == null || pagepersheet <= 0 || pagepersheet == null ||
+            if (papersize == null ||
+                numpage <= 0 ||
+                numpage == null ||
+                (numside != 1 && numside != 2) ||
+                numcopy <= 0 ||
+                numcopy == null ||
+                pagepersheet <= 0 ||
+                pagepersheet == null ||
                 colortype == null)
                 throw new errorRespone_1.BadRequestError("Invalid parameter for CalculatePrice");
             let base_coin = 1;
@@ -211,7 +215,7 @@ class PrintingJobService {
                     continue;
                 let page_cnt = Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
                 total_page += page_cnt;
-                let month = (new Date(printJob.starttime)).toISOString().slice(0, 7);
+                let month = new Date(printJob.starttime).toISOString().slice(0, 7);
                 let cr = mp.get(month);
                 mp.set(month, (cr ? cr : 0) + page_cnt);
             }
@@ -240,11 +244,11 @@ class PrintingJobService {
             });
             if (byMonth) {
                 let res = [];
-                let prv_month = 'none';
+                let prv_month = "none";
                 let user = new Set();
                 for (let i in allPrintjob) {
-                    let month = (new Date(allPrintjob[i].starttime)).toISOString().slice(0, 7);
-                    if (prv_month != month && prv_month != 'none') {
+                    let month = new Date(allPrintjob[i].starttime).toISOString().slice(0, 7);
+                    if (prv_month != month && prv_month != "none") {
                         res.push({ month: prv_month, totalUser: user.size });
                         user = new Set();
                     }
@@ -271,7 +275,7 @@ class PrintingJobService {
                 mp.set(type_list[i], 0);
             let allPrintjob = yield printJob_model_1.default.getPrintJobType({
                 startDate: startDate,
-                endDate: endDate,
+                endDate: endDate
             });
             for (let i in allPrintjob) {
                 for (let j in type_list) {
@@ -303,7 +307,7 @@ class PrintingJobService {
                 let printJob = allPrintjob[i];
                 if (printJob.status != "success")
                     continue;
-                let day = (new Date(printJob.starttime)).toISOString().slice(0, 10);
+                let day = new Date(printJob.starttime).toISOString().slice(0, 10);
                 let cr = mp.get(day);
                 mp.set(day, (cr ? cr : 0) + 1);
             }
@@ -328,7 +332,7 @@ class PrintingJobService {
             });
             let mp = new Map();
             for (let i in allPrintjob) {
-                let day = (new Date(allPrintjob[i].starttime)).toISOString().slice(0, 10);
+                let day = new Date(allPrintjob[i].starttime).toISOString().slice(0, 10);
                 let cr = mp.get(day);
                 mp.set(day, (cr ? cr : 0) + 1);
             }

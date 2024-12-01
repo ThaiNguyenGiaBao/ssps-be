@@ -18,7 +18,7 @@ const successResponse_1 = require("../helper/successResponse");
 const errorRespone_1 = require("../helper/errorRespone");
 const report_service_1 = __importDefault(require("../services/report.service"));
 class PrintJobController {
-    // Route /createPrintJob 
+    // Route /createPrintJob
     static CreatePrintJob(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("PrintJobController::CreatePrintJob", req.body);
@@ -174,7 +174,7 @@ class PrintJobController {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("PrintJobController::getPrintJob", req.params);
             let printJob = yield printJob_service_1.default.getPrintJob(req.params.printjobId);
-            if (req.user.role == 'user' && req.user.id != printJob.userid) {
+            if (req.user.role == "user" && req.user.id != printJob.userid) {
                 throw new errorRespone_1.ForbiddenError("Permission denied on getting other user's printJob");
             }
             return new successResponse_1.OK({
@@ -197,7 +197,7 @@ class PrintJobController {
                     paperSize: req.query.paperSize,
                     startDate: req.query.startDate,
                     endDate: req.query.endDate,
-                    byMonth: (req.query.byMonth == 'true' ? true : false)
+                    byMonth: req.query.byMonth == "true" ? true : false
                 })
             }).send(res);
         });
@@ -215,7 +215,7 @@ class PrintJobController {
                     paperSize: req.query.paperSize,
                     startDate: req.query.startDate,
                     endDate: req.query.endDate,
-                    byMonth: (req.query.byMonth == 'true' ? true : false)
+                    byMonth: req.query.byMonth == "true" ? true : false
                 })
             }).send(res);
         });
@@ -232,7 +232,7 @@ class PrintJobController {
                 data: yield printJob_service_1.default.CalculateTotalUser({
                     startDate: req.query.startDate,
                     endDate: req.query.endDate,
-                    byMonth: (req.query.byMonth == 'true' ? true : false)
+                    byMonth: req.query.byMonth == "true" ? true : false
                 })
             }).send(res);
         });
@@ -264,7 +264,7 @@ class PrintJobController {
                 data: yield printJob_service_1.default.printerUsageFrequency({
                     printerId: req.params.printerId,
                     startDate: req.query.startDate,
-                    endDate: req.query.endDate,
+                    endDate: req.query.endDate
                 })
             }).send(res);
         });
@@ -279,7 +279,7 @@ class PrintJobController {
                 message: "File print request frequency by day",
                 data: yield printJob_service_1.default.getFilePrintRequestFrequency({
                     startDate: req.query.startDate,
-                    endDate: req.query.endDate,
+                    endDate: req.query.endDate
                 })
             }).send(res);
         });
