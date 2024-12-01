@@ -7,36 +7,33 @@ import ReportService from "../services/report.service";
 import { start } from "repl";
 
 class PrintJobController {
-    
-    // Route /createPrintJob 
+    // Route /createPrintJob
     static async CreatePrintJob(req: Request, res: Response) {
-
         console.log("PrintJobController::CreatePrintJob", req.body);
-        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
-        
+        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
+
         let printJob = await PrintJobService.savePrintJob({
-            printerid:      req.body.printerid,
-            userid:         req.user.id, 
-            fileid:         req.body.fileid,
-            papersize:      req.body.papersize,
-            numpage:        req.body.numpage,
-            numside:        req.body.numside,
-            numcopy:        req.body.numcopy,
-            pagepersheet:   req.body.pagepersheet,
-            colortype:      req.body.colortype,
-            orientation:    req.body.orientation,
-            status:         "created"
+            printerid: req.body.printerid,
+            userid: req.user.id,
+            fileid: req.body.fileid,
+            papersize: req.body.papersize,
+            numpage: req.body.numpage,
+            numside: req.body.numside,
+            numcopy: req.body.numcopy,
+            pagepersheet: req.body.pagepersheet,
+            colortype: req.body.colortype,
+            orientation: req.body.orientation,
+            status: "created"
         });
 
         const price = await PrintJobService.CalculatePrice({
-            papersize:      req.body.papersize,
-            colortype:      req.body.colortype,
-            numpage:        req.body.numpage,
-            numside:        req.body.numside,
-            pagepersheet:   req.body.pagepersheet,
-            numcopy:        req.body.numcopy
+            papersize: req.body.papersize,
+            colortype: req.body.colortype,
+            numpage: req.body.numpage,
+            numside: req.body.numside,
+            pagepersheet: req.body.pagepersheet,
+            numcopy: req.body.numcopy
         });
-
 
         return new Created({
             message: "PrintJob created",
@@ -49,9 +46,8 @@ class PrintJobController {
 
     // Route /startPrintJob
     static async StartPrintJob(req: Request, res: Response) {
-
         console.log("PrintJobController::StartPrintJob", req.body);
-        if(req.user.role == "admin") throw new ForbiddenError("Only accept user");
+        if (req.user.role == "admin") throw new ForbiddenError("Only accept user");
 
         let printJob = await PrintJobService.getPrintJob(req.body.printJobId);
 
@@ -59,15 +55,15 @@ class PrintJobController {
 
         let userBalance = await UserService.getUserBalance(req.user.id);
         let price = await PrintJobService.CalculatePrice({
-            papersize:      printJob.papersize,
-            colortype:      printJob.colortype,
-            numpage:        printJob.numpage,
-            numside:        printJob.numside,
-            pagepersheet:   printJob.pagepersheet,
-            numcopy:        printJob.numcopy
+            papersize: printJob.papersize,
+            colortype: printJob.colortype,
+            numpage: printJob.numpage,
+            numside: printJob.numside,
+            pagepersheet: printJob.pagepersheet,
+            numcopy: printJob.numcopy
         });
 
-        if(price > userBalance) {
+        if (price > userBalance) {
             await PrintJobService.updateStatus({
                 printJobId: req.body.printJobId,
                 newStatus: "unpaid"
@@ -90,8 +86,8 @@ class PrintJobController {
         ReportService.createEvent({
             userId: req.user.id,
             type: "print document",
-            description: req.body.printJobId 
-        })
+            description: req.body.printJobId
+        });
 
         PrintJobService.updateStatus({
             printJobId: req.body.printJobId,
@@ -107,7 +103,7 @@ class PrintJobController {
     // Route /all : Get all history
     static async getAllPrintingHistory(req: Request, res: Response) {
         console.log("PrintJobController::getAllPrintingHistory", req.query);
-        if(req.user.role == "user") throw new ForbiddenError("Permission denied on getting history of other user");
+        if (req.user.role == "user") throw new ForbiddenError("Permission denied on getting history of other user");
 
         const page = req.query.displayPage ? parseInt(req.query.displayPage as string) : 1;
         const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage as string) : 10;
@@ -115,11 +111,11 @@ class PrintJobController {
         return new OK({
             message: "All history",
             data: await PrintJobService.getPrintingHistoryByUserAndPrinter({
-                userId:     "none", 
-                printerId:  "none",
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
-                PageNum:    page,
+                userId: "none",
+                printerId: "none",
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string,
+                PageNum: page,
                 itemPerPage: limit
             })
         }).send(res);
@@ -127,9 +123,8 @@ class PrintJobController {
 
     // Route /user/:userId : Get history of a user
     static async getPrintingHistoryByUser(req: Request, res: Response) {
-        
         console.log("PrintJobController::getPrintingHistoryByUser", req.params, req.query);
-        if(req.user.role == "user" && req.params.userId != req.user.id) {
+        if (req.user.role == "user" && req.params.userId != req.user.id) {
             throw new ForbiddenError("Permission denied on getting history of other user");
         }
 
@@ -139,11 +134,11 @@ class PrintJobController {
         return new OK({
             message: "All history printjob of user",
             data: await PrintJobService.getPrintingHistoryByUserAndPrinter({
-                userId:     req.params.userId, 
-                printerId:  "none",
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
-                PageNum:    page,
+                userId: req.params.userId,
+                printerId: "none",
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string,
+                PageNum: page,
                 itemPerPage: limit
             })
         }).send(res);
@@ -153,23 +148,22 @@ class PrintJobController {
     // If user's role is admin, return all printJob of a printer
     // If user's role is user, return all printJob belong to that user of a printer
     static async getPrintingHistoryByPrinter(req: Request, res: Response) {
-
         console.log("PrintJobController::getPrintingHistoryByPrinter", req.params, req.query);
         let userId = req.user.id;
-        if(req.user.role == "admin") userId = "none";
+        if (req.user.role == "admin") userId = "none";
 
         const page = req.query.displayPage ? parseInt(req.query.displayPage as string) : 1;
         const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage as string) : 10;
 
         let result = await PrintJobService.getPrintingHistoryByUserAndPrinter({
-            userId:     userId,
-            printerId:  req.params.printerId,
-            startDate:  req.query.startDate as string,
-            endDate:    req.query.endDate as string, 
-            PageNum:    page,
+            userId: userId,
+            printerId: req.params.printerId,
+            startDate: req.query.startDate as string,
+            endDate: req.query.endDate as string,
+            PageNum: page,
             itemPerPage: limit
         });
-        
+
         return new OK({
             message: "All history printjob of printer",
             data: result
@@ -177,10 +171,9 @@ class PrintJobController {
     }
 
     static async getPrintJob(req: Request, res: Response) {
-
         console.log("PrintJobController::getPrintJob", req.params);
-        let printJob = await PrintJobService.getPrintJob(req.params.printjobId)
-        if(req.user.role == 'user' && req.user.id != printJob.userid) {
+        let printJob = await PrintJobService.getPrintJob(req.params.printjobId);
+        if (req.user.role == "user" && req.user.id != printJob.userid) {
             throw new ForbiddenError("Permission denied on getting other user's printJob");
         }
 
@@ -193,106 +186,103 @@ class PrintJobController {
     // Route /totalPage/:userId : Get total page used by a user
     static async getTotalPage(req: Request, res: Response) {
         console.log("PrintJobController::getTotalPage", req.params, req.query);
-        if(req.user.role == "user" && req.params.userId != req.user.id) {
+        if (req.user.role == "user" && req.params.userId != req.user.id) {
             throw new ForbiddenError("Permission denied on getting other user's total page");
         }
 
         return new OK({
             message: "Total printed page of user",
             data: await PrintJobService.CalculateTotalPage({
-                userId:     req.params.userId,
-                paperSize:  req.query.paperSize as string,
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
-                byMonth:    (req.query.byMonth == 'true'? true: false)
+                userId: req.params.userId,
+                paperSize: req.query.paperSize as string,
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string,
+                byMonth: req.query.byMonth == "true" ? true : false
             })
         }).send(res);
     }
 
     static async getTotalPageOfAll(req: Request, res: Response) {
         console.log("PrintJobController::getTotalPageOfAll", req.query);
-        if(req.user.role != "admin") {
+        if (req.user.role != "admin") {
             throw new ForbiddenError("Permission denied on getting other user's total page");
         }
 
         return new OK({
             message: "Total printed page of user",
             data: await PrintJobService.CalculateTotalPage({
-                userId:     "none",
-                paperSize:  req.query.paperSize as string,
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
-                byMonth:    (req.query.byMonth == 'true'? true: false)
+                userId: "none",
+                paperSize: req.query.paperSize as string,
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string,
+                byMonth: req.query.byMonth == "true" ? true : false
             })
         }).send(res);
     }
 
-
     // Route /totalUser : Get total user active from startDate to endDate
     static async getTotalUser(req: Request, res: Response) {
-
         console.log("PrintJobController::getTotalUser", req.params, req.query);
-        if(req.user.role != "admin") {
+        if (req.user.role != "admin") {
             throw new ForbiddenError("Only admin can get total number of user");
         }
-                
+
         return new OK({
             message: "Total user",
             data: await PrintJobService.CalculateTotalUser({
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
-                byMonth:    (req.query.byMonth == 'true'? true: false)
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string,
+                byMonth: req.query.byMonth == "true" ? true : false
             })
         }).send(res);
     }
 
     static async getTotalFilebyType(req: Request, res: Response) {
         console.log("PrintJobController::totalFilebyType", req.params, req.query);
-        if(req.user.role != "admin") {
+        if (req.user.role != "admin") {
             throw new ForbiddenError("Only admin can get total file");
         }
-        
+
         return new OK({
             message: "Total File by Type",
             data: await PrintJobService.totalFilebyType({
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
-                types:      req.query.types as string
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string,
+                types: req.query.types as string
             })
         }).send(res);
     }
 
     static async getPrinterUsageFrequency(req: Request, res: Response) {
         console.log("PrintJobController::printerUsageFrequency", req.params, req.query);
-        if(req.user.role != "admin") {
+        if (req.user.role != "admin") {
             throw new ForbiddenError("Only admin can Printer usage frequency by day");
         }
 
         return new OK({
             message: "Printer usage frequency by day",
             data: await PrintJobService.printerUsageFrequency({
-                printerId:  req.params.printerId,
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
+                printerId: req.params.printerId,
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string
             })
         }).send(res);
     }
 
     static async getFilePrintRequestFrequency(req: Request, res: Response) {
         console.log("PrintJobController::getFilePrintRequestFrequency", req.params, req.query);
-        if(req.user.role != "admin") {
+        if (req.user.role != "admin") {
             throw new ForbiddenError("Only admin can getFilePrintRequestFrequency");
         }
 
         return new OK({
             message: "File print request frequency by day",
             data: await PrintJobService.getFilePrintRequestFrequency({
-                startDate:  req.query.startDate as string,
-                endDate:    req.query.endDate as string, 
+                startDate: req.query.startDate as string,
+                endDate: req.query.endDate as string
             })
         }).send(res);
     }
 }
-
 
 export default PrintJobController;
