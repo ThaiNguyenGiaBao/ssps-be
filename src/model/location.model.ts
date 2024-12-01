@@ -9,15 +9,28 @@ export interface Location {
 }
 
 class LocationModel {
-  static async getAllLocation({offset, limit}: {offset: number, limit: number}): Promise<Location[]> {
+  static async getAllLocation({offset, limit}: {offset: number, limit: number}) {
     const result = await db.query(`
       SELECT * 
       FROM LOCATION
       LIMIT $1 OFFSET $2;`, [limit, offset]);
-    return result.rows;
+    
+    const countQuery = await db.query(`SELECT COUNT(*) AS total FROM location;`);
+    const totalItems = countQuery.rows[0].total;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: result.rows,
+      meta: {
+        totalPages,
+        totalItems,
+        currentPage: offset/limit + 1,
+        perPage: limit
+      }
+    }; 
   }
   
-  static async getLocation(data: Partial<Location>, {offset, limit}: {offset: number, limit: number}): Promise<Location[]> {
+  static async getLocation(data: Partial<Location>, {offset, limit}: {offset: number, limit: number}) {
     const fields = Object.keys(data);
     const values = Object.values(data);
     if (fields.length === 0) {
@@ -28,8 +41,26 @@ class LocationModel {
       SELECT *
       FROM LOCATION
       WHERE ${setClauses}
-      LIMIT $${fields.length+1} OFFSET $${fields.length+2};`, [...values, limit, offset]); 
-    return result.rows;
+      LIMIT $${fields.length+1} OFFSET $${fields.length+2};
+    `, [...values, limit, offset]); 
+
+    const countQuery = await db.query(`
+      SELECT COUNT(*) as total
+      FROM LOCATION
+      WHERE ${setClauses};
+    `, [...values]);
+    const totalItems = countQuery.rows[0].total;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: result.rows,
+      meta: {
+        totalPages,
+        totalItems,
+        currentPage: offset/limit + 1,
+        perPage: limit
+      }
+    }; 
   }
 
   static async insertLocation(campusname: string, buildingname: string, roomnumber: number): Promise<Location | null> {
