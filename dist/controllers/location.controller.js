@@ -29,8 +29,7 @@ class LocationController {
                 result = yield location_service_1.default.getLocation(location, { offset, limit });
             return new successResponse_1.OK({
                 data: result,
-                message: result.length === 0 ? "No location found" :
-                    "Get locations successfully"
+                message: "Get locations successfully"
             }).send(res);
         });
     }

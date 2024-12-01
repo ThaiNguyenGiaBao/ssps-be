@@ -205,7 +205,7 @@ class PrintJobController {
     static getTotalPageOfAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("PrintJobController::getTotalPageOfAll", req.query);
-            if (req.user.role == "admin") {
+            if (req.user.role != "admin") {
                 throw new errorRespone_1.ForbiddenError("Permission denied on getting other user's total page");
             }
             return new successResponse_1.OK({

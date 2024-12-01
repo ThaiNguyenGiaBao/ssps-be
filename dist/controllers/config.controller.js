@@ -15,11 +15,15 @@ const errorRespone_1 = require("../helper/errorRespone");
 class ConfigController {
     static getConfigSettings(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            let permitedFiles = yield config_service_1.ConfigService.getPermitedFile();
+            const page = parseInt(req.query.page, 10) || 1; // Default to page 1
+            const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
+            const offset = (page - 1) * limit;
+            let result = yield config_service_1.ConfigService.getPermitedFile({ offset, limit });
             let config = yield config_service_1.ConfigService.getPageConfig();
             return new successResponse_1.OK({
                 data: {
-                    "permitedFiles": permitedFiles,
+                    "permitedFiles": result.data,
+                    "meta": result.meta,
                     "config": config
                 },
                 message: "Get configuration successfully!"
@@ -28,7 +32,10 @@ class ConfigController {
     }
     static getPermitedFile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield config_service_1.ConfigService.getPermitedFile();
+            const page = parseInt(req.query.page, 10) || 1; // Default to page 1
+            const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
+            const offset = (page - 1) * limit;
+            const result = yield config_service_1.ConfigService.getPermitedFile({ offset, limit });
             return new successResponse_1.OK({
                 data: result,
                 message: "Get permited file types successfully!"

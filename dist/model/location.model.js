@@ -21,7 +21,18 @@ class LocationModel {
       SELECT * 
       FROM LOCATION
       LIMIT $1 OFFSET $2;`, [limit, offset]);
-            return result.rows;
+            const countQuery = yield initDatabase_1.default.query(`SELECT COUNT(*) AS total FROM location;`);
+            const totalItems = countQuery.rows[0].total;
+            const totalPages = Math.ceil(totalItems / limit);
+            return {
+                data: result.rows,
+                meta: {
+                    totalPages,
+                    totalItems,
+                    currentPage: offset / limit + 1,
+                    perPage: limit
+                }
+            };
         });
     }
     static getLocation(data_1, _a) {
@@ -36,8 +47,24 @@ class LocationModel {
       SELECT *
       FROM LOCATION
       WHERE ${setClauses}
-      LIMIT $${fields.length + 1} OFFSET $${fields.length + 2};`, [...values, limit, offset]);
-            return result.rows;
+      LIMIT $${fields.length + 1} OFFSET $${fields.length + 2};
+    `, [...values, limit, offset]);
+            const countQuery = yield initDatabase_1.default.query(`
+      SELECT COUNT(*) as total
+      FROM LOCATION
+      WHERE ${setClauses};
+    `, [...values]);
+            const totalItems = countQuery.rows[0].total;
+            const totalPages = Math.ceil(totalItems / limit);
+            return {
+                data: result.rows,
+                meta: {
+                    totalPages,
+                    totalItems,
+                    currentPage: offset / limit + 1,
+                    perPage: limit
+                }
+            };
         });
     }
     static insertLocation(campusname, buildingname, roomnumber) {
