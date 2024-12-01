@@ -13,32 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
-const errorRespone_1 = require("../helper/errorRespone");
 class PrinterModel {
-    static findAllPrinter(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ offset, limit }) {
-            const result = yield initDatabase_1.default.query(`
-      SELECT * FROM PRINTER
-      LIMIT $1 OFFSET $2;`, [limit, offset]);
-            const countQuery = yield initDatabase_1.default.query(`SELECT COUNT(*) AS total FROM printer`);
-            const totalItems = countQuery.rows[0].total;
-            const totalPages = Math.ceil(totalItems / limit);
-            return {
-                data: result.rows,
-                meta: {
-                    totalPages,
-                    totalItems,
-                    currentPage: offset / limit + 1,
-                    perPage: limit
-                }
-            };
+    static findAllPrinter() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield initDatabase_1.default.query(`SELECT * FROM PRINTER`);
+            return result.rows;
         });
     }
     static findPrinterByID(printerID) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield initDatabase_1.default.query(`
       SELECT * FROM PRINTER 
-      WHERE ID=$1;`, [printerID]);
+      WHERE ID=$1`, [printerID]);
             return result.rows[0] || null;
         });
     }
@@ -57,9 +43,9 @@ class PrinterModel {
             const values = Object.values(data);
             // Return early if no fields to update
             if (fields.length === 0) {
-                throw new errorRespone_1.BadRequestError("No fields provided to update");
+                throw new Error("No fields provided to update");
             }
-            const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
+            const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
             const result = yield initDatabase_1.default.query(`
       UPDATE PRINTER
       SET ${setClauses}

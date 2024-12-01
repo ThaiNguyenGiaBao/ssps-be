@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkUUID = exports.asyncHandler = void 0;
-exports.isValidTimestamp = isValidTimestamp;
 const asyncHandler = (fn) => {
     return (req, res, next) => {
         Promise.resolve(fn(req, res, next)).catch(next);
@@ -13,14 +12,3 @@ const checkUUID = (uuid) => {
     return uuidRegex.test(uuid);
 };
 exports.checkUUID = checkUUID;
-/**
- * Validates the format of a given ISO 8601 timestamp string.
- * @param time The timestamp string to validate.
- * @returns True if the timestamp matches the ISO 8601 format with timezone.
- */
-function isValidTimestamp(time) {
-    // Try to create a Date object from the time string
-    const dateObj = new Date(time);
-    // Check if the Date object is valid
-    return !isNaN(dateObj.getTime());
-}

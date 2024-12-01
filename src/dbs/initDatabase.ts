@@ -26,9 +26,4 @@ db.connect()
         console.error("Connection error", err.stack);
     });
 
-setInterval(() => {
-    db.query("SELECT * FROM users");
-    console.log("Query DBS...")
-}, 60000);
-
 export default db;

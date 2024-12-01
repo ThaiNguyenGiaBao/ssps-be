@@ -11,7 +11,6 @@ const router = express_1.default.Router();
 router.post("/signup", (0, utils_1.asyncHandler)(access_controller_1.default.SignUp));
 router.post("/signin", (0, utils_1.asyncHandler)(access_controller_1.default.SignIn));
 router.use((0, utils_1.asyncHandler)(auth_middlewares_1.authenticateToken));
-// /api/auth/
 router.get("/", (req, res) => {
     res.json({ message: "Hello World" });
 });

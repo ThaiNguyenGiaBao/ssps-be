@@ -14,23 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 class PermitedFileModel {
-    static findAllPermitedFiles(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ offset, limit }) {
-            const result = yield initDatabase_1.default.query(`SELECT * 
-      FROM permitedfile
-      LIMIT $1 OFFSET $2;`, [limit, offset]);
-            const countQuery = yield initDatabase_1.default.query(`SELECT COUNT(*) AS total FROM permitedfile;`);
-            const totalItems = countQuery.rows[0].total;
-            const totalPages = Math.ceil(totalItems / limit);
-            return {
-                data: result.rows,
-                meta: {
-                    totalPages,
-                    totalItems,
-                    currentPage: offset / limit + 1,
-                    perPage: limit
-                }
-            };
+    static findAllPermitedFiles() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield initDatabase_1.default.query("SELECT * FROM permitedfile;");
+            return result.rows;
         });
     }
     static addPermitedFile(permitedFile) {
@@ -57,7 +44,7 @@ class PermitedFileModel {
             if (fields.length === 0) {
                 throw new Error("No fields provided to update");
             }
-            const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
+            const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
             const result = yield initDatabase_1.default.query(`
       UPDATE PERMITEDFILE
       SET ${setClauses}

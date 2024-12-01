@@ -28,9 +28,9 @@ async function uploadFile(file: FileObject) {
         const downloadURL = await getDownloadURL(storageRef);
 
         return downloadURL; // Return the download URL
-    } catch (error: any) {
-        console.error("Upload error:", error.message);
-        throw new Error(error.message);
+    } catch (error) {
+        console.error("Upload error:", error);
+        throw new Error("File upload failed.");
     }
 }
 

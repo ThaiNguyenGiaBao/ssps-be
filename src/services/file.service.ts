@@ -3,41 +3,24 @@ import db from "../dbs/initDatabase";
 import uploadFile from "../utils/uploadFile";
 import { FileObject } from "../utils/uploadFile";
 import FileModel from "../model/file.model";
-import pdfParse from "pdf-parse";
-
 class FileService {
-    static async getPdfPageCount(file: FileObject): Promise<number | null> {
-        if (file.mimetype === "application/pdf") {
-            try {
-                const pdfData = await pdfParse(file.buffer);
-                return pdfData.numpages;
-            } catch (error) {
-                console.error("Error parsing PDF:", error);
-                return null;
-            }
-        }
-        return null; // Return null if the file is not a PDF
-    }
-
     // router.post("/upload", upload.single("file"), asyncHandler(FileController.uploadFile));
     static async uploadFile(userId: string, file: FileObject) {
         const timestamp = Date.now();
         const uniqueFilename = `${timestamp}-${file.originalname}`;
-        let pageCount = await this.getPdfPageCount(file);
+
         const downloadURL = await uploadFile({
             originalname: uniqueFilename,
             buffer: file.buffer,
             mimetype: file.mimetype
         });
-        pageCount = pageCount == null ? 1 : pageCount;
+
         const newFile = await FileModel.createFile({
             uniqueFilename,
             downloadURL,
             userId,
-            file,
-            numpage: pageCount
+            file
         });
-
         return newFile;
     }
     //router.get("/", asyncHandler(FileController.getAllFiles));
@@ -65,7 +48,7 @@ class FileService {
         const file = await FileModel.getFileByUserId(userId);
 
         if (file.length === 0) {
-            return [];
+            throw new NotFoundError("File not found");
         }
         return file;
     }
@@ -84,9 +67,8 @@ class FileService {
         if (!file) {
             throw new NotFoundError("File not found");
         }
-        return await FileModel.softDeleteFile(fileId);
 
-        //return await FileModel.deleteFile(fileId);
+        return await FileModel.deleteFile(fileId);
     }
 }
 

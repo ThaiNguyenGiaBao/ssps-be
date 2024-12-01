@@ -15,13 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 class FileModel {
     static createFile(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ uniqueFilename, downloadURL, userId, file, numpage }) {
-            const newFile = yield initDatabase_1.default.query("INSERT INTO file (filename, url, userId, type, numpage) VALUES ($1,$2, $3, $4, $5) RETURNING *", [
+        return __awaiter(this, arguments, void 0, function* ({ uniqueFilename, downloadURL, userId, file }) {
+            const newFile = yield initDatabase_1.default.query("INSERT INTO file (filename, url, userId, type) VALUES ($1,$2, $3, $4) RETURNING *", [
                 uniqueFilename,
                 downloadURL,
                 userId,
-                file.mimetype,
-                numpage
+                file.mimetype
             ]);
             return newFile.rows[0];
         });
@@ -41,12 +40,6 @@ class FileModel {
     static deleteFile(fileId) {
         return __awaiter(this, void 0, void 0, function* () {
             const file = yield initDatabase_1.default.query("DELETE FROM file WHERE id = $1 RETURNING *", [fileId]);
-            return file.rows[0];
-        });
-    }
-    static softDeleteFile(fileId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const file = yield initDatabase_1.default.query("UPDATE file SET isDeleted = true WHERE id = $1 RETURNING *", [fileId]);
             return file.rows[0];
         });
     }
