@@ -16,8 +16,9 @@ const printJob_service_1 = __importDefault(require("../services/printJob.service
 const user_service_1 = __importDefault(require("../services/user.service"));
 const successResponse_1 = require("../helper/successResponse");
 const errorRespone_1 = require("../helper/errorRespone");
+const report_service_1 = __importDefault(require("../services/report.service"));
 class PrintJobController {
-    // Route /createPrintJob
+    // Route /createPrintJob 
     static CreatePrintJob(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("PrintJobController::CreatePrintJob", req.body);
@@ -86,6 +87,11 @@ class PrintJobController {
             // Printfile
             // Dont need await here, in reality, we just send printjob to printer and printer will update printJob status.
             // Our task in this controller is to send request, not to wait for it to be finished.
+            report_service_1.default.createEvent({
+                userId: req.user.id,
+                type: "print document",
+                description: req.body.printJobId
+            });
             printJob_service_1.default.updateStatus({
                 printJobId: req.body.printJobId,
                 newStatus: "success"
@@ -102,10 +108,8 @@ class PrintJobController {
             console.log("PrintJobController::getAllPrintingHistory", req.query);
             if (req.user.role == "user")
                 throw new errorRespone_1.ForbiddenError("Permission denied on getting history of other user");
-            if (req.query.displayPage == null)
-                req.query.displayPage = "0";
-            if (req.query.itemPerPage == null)
-                req.query.itemPerPage = "0";
+            const page = req.query.displayPage ? parseInt(req.query.displayPage) : 1;
+            const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage) : 10;
             return new successResponse_1.OK({
                 message: "All history",
                 data: yield printJob_service_1.default.getPrintingHistoryByUserAndPrinter({
@@ -113,8 +117,8 @@ class PrintJobController {
                     printerId: "none",
                     startDate: req.query.startDate,
                     endDate: req.query.endDate,
-                    PageNum: parseInt(req.query.displayPage),
-                    itemPerPage: parseInt(req.query.itemPerPage)
+                    PageNum: page,
+                    itemPerPage: limit
                 })
             }).send(res);
         });
@@ -150,17 +154,15 @@ class PrintJobController {
             let userId = req.user.id;
             if (req.user.role == "admin")
                 userId = "none";
-            if (req.query.displayPage == null)
-                req.query.displayPage = "0";
-            if (req.query.itemPerPage == null)
-                req.query.itemPerPage = "0";
+            const page = req.query.displayPage ? parseInt(req.query.displayPage) : 1;
+            const limit = req.query.itemPerPage ? parseInt(req.query.itemPerPage) : 10;
             let result = yield printJob_service_1.default.getPrintingHistoryByUserAndPrinter({
                 userId: userId,
                 printerId: req.params.printerId,
                 startDate: req.query.startDate,
                 endDate: req.query.endDate,
-                PageNum: parseInt(req.query.displayPage),
-                itemPerPage: parseInt(req.query.itemPerPage)
+                PageNum: page,
+                itemPerPage: limit
             });
             return new successResponse_1.OK({
                 message: "All history printjob of printer",
@@ -172,7 +174,7 @@ class PrintJobController {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("PrintJobController::getPrintJob", req.params);
             let printJob = yield printJob_service_1.default.getPrintJob(req.params.printjobId);
-            if (req.user.role == "user" && req.user.id != printJob.userid) {
+            if (req.user.role == 'user' && req.user.id != printJob.userid) {
                 throw new errorRespone_1.ForbiddenError("Permission denied on getting other user's printJob");
             }
             return new successResponse_1.OK({
@@ -194,7 +196,26 @@ class PrintJobController {
                     userId: req.params.userId,
                     paperSize: req.query.paperSize,
                     startDate: req.query.startDate,
-                    endDate: req.query.endDate
+                    endDate: req.query.endDate,
+                    byMonth: (req.query.byMonth == 'true' ? true : false)
+                })
+            }).send(res);
+        });
+    }
+    static getTotalPageOfAll(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::getTotalPageOfAll", req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Permission denied on getting other user's total page");
+            }
+            return new successResponse_1.OK({
+                message: "Total printed page of user",
+                data: yield printJob_service_1.default.CalculateTotalPage({
+                    userId: "none",
+                    paperSize: req.query.paperSize,
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                    byMonth: (req.query.byMonth == 'true' ? true : false)
                 })
             }).send(res);
         });
@@ -210,7 +231,55 @@ class PrintJobController {
                 message: "Total user",
                 data: yield printJob_service_1.default.CalculateTotalUser({
                     startDate: req.query.startDate,
-                    endDate: req.query.endDate
+                    endDate: req.query.endDate,
+                    byMonth: (req.query.byMonth == 'true' ? true : false)
+                })
+            }).send(res);
+        });
+    }
+    static getTotalFilebyType(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::totalFilebyType", req.params, req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Only admin can get total file");
+            }
+            return new successResponse_1.OK({
+                message: "Total File by Type",
+                data: yield printJob_service_1.default.totalFilebyType({
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                    types: req.query.types
+                })
+            }).send(res);
+        });
+    }
+    static getPrinterUsageFrequency(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::printerUsageFrequency", req.params, req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Only admin can Printer usage frequency by day");
+            }
+            return new successResponse_1.OK({
+                message: "Printer usage frequency by day",
+                data: yield printJob_service_1.default.printerUsageFrequency({
+                    printerId: req.params.printerId,
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
+                })
+            }).send(res);
+        });
+    }
+    static getFilePrintRequestFrequency(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("PrintJobController::getFilePrintRequestFrequency", req.params, req.query);
+            if (req.user.role != "admin") {
+                throw new errorRespone_1.ForbiddenError("Only admin can getFilePrintRequestFrequency");
+            }
+            return new successResponse_1.OK({
+                message: "File print request frequency by day",
+                data: yield printJob_service_1.default.getFilePrintRequestFrequency({
+                    startDate: req.query.startDate,
+                    endDate: req.query.endDate,
                 })
             }).send(res);
         });

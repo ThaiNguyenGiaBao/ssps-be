@@ -14,14 +14,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const printJob_model_1 = __importDefault(require("../model/printJob.model"));
 const user_service_1 = __importDefault(require("../services/user.service"));
+const file_service_1 = __importDefault(require("./file.service"));
 const initDatabase_1 = __importDefault(require("../dbs/initDatabase"));
 const errorRespone_1 = require("../helper/errorRespone");
 class PrintingJobService {
+    static checkDate(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate }) {
+            if (startDate != null && endDate != null) {
+                let checkStartDate = isNaN(Date.parse(startDate));
+                let checkEndDate = isNaN(Date.parse(endDate));
+                if (checkStartDate || checkEndDate)
+                    throw new errorRespone_1.BadRequestError("Date format is wrong");
+            }
+        });
+    }
     static getPrintJob(printJobId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (printJobId == null)
                 throw new errorRespone_1.BadRequestError("printJobId is null");
-            return yield printJob_model_1.default.getPrintJob(printJobId);
+            let printJob = yield printJob_model_1.default.getPrintJob(printJobId);
+            printJob.filename = (yield file_service_1.default.getFileById("none", printJob.fileid)).filename;
+            return printJob;
         });
     }
     static updateStatus(_a) {
@@ -40,12 +53,7 @@ class PrintingJobService {
                 throw new errorRespone_1.BadRequestError("userId is null");
             if (printerId == null)
                 throw new errorRespone_1.BadRequestError("printerId is null");
-            if (startDate != null && endDate != null) {
-                let checkStartDate = isNaN(Date.parse(startDate));
-                let checkEndDate = isNaN(Date.parse(endDate));
-                if (checkStartDate || checkEndDate)
-                    throw new errorRespone_1.BadRequestError("Date format is wrong");
-            }
+            this.checkDate({ startDate: startDate, endDate: endDate });
             if (!Number.isInteger(PageNum) || PageNum < 0)
                 throw new errorRespone_1.BadRequestError("Pagination: displayPage is invalid");
             if (!Number.isInteger(itemPerPage) || itemPerPage < 0)
@@ -90,27 +98,25 @@ class PrintingJobService {
                 });
             }
             let numItem = result.length;
-            let totalPage = 0;
-            let prices = [];
+            let totalPage = Math.ceil(numItem / itemPerPage);
+            result = result.slice((PageNum - 1) * itemPerPage, PageNum * itemPerPage);
             for (let i in result) {
                 let printJob = result[i];
-                prices.push(yield PrintingJobService.CalculatePrice({
+                let price = yield PrintingJobService.CalculatePrice({
                     papersize: printJob.papersize,
                     colortype: printJob.colortype,
                     numpage: printJob.numpage,
                     numside: printJob.numside,
                     pagepersheet: printJob.pagepersheet,
                     numcopy: printJob.numcopy
-                }));
-                if (printJob.status != "success")
-                    continue;
-                totalPage += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+                });
+                result[i].price = price;
+                result[i].filename = (yield file_service_1.default.getFileById("none", printJob.fileid)).filename;
             }
             return {
-                printjob: result,
+                printJob: result,
                 totalItem: numItem,
-                totalPage: totalPage,
-                prices: prices
+                totalPage: totalPage
             };
         });
     }
@@ -171,53 +177,169 @@ class PrintingJobService {
         });
     }
     static CalculateTotalPage(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ userId, paperSize, startDate, endDate }) {
+        return __awaiter(this, arguments, void 0, function* ({ userId, paperSize, startDate, endDate, byMonth }) {
             if (userId == null)
                 throw new errorRespone_1.BadRequestError("Invalid parameter for CalculateTotalPage");
-            if (startDate != null && endDate != null) {
-                let checkStartDate = isNaN(Date.parse(startDate));
-                let checkEndDate = isNaN(Date.parse(endDate));
-                if (checkStartDate || checkEndDate)
-                    throw new errorRespone_1.BadRequestError("Date format is wrong");
+            this.checkDate({ startDate: startDate, endDate: endDate });
+            if (userId != "none")
+                yield user_service_1.default.getUser(userId); // Check if user's exist
+            let allPrintjob;
+            if (userId != "none") {
+                allPrintjob = yield printJob_model_1.default.getPrintJobByUser({
+                    userId: userId,
+                    startDate: startDate,
+                    endDate: endDate,
+                    PageNum: 0,
+                    itemPerPage: 10
+                });
             }
-            yield user_service_1.default.getUser(userId); // Check if user's exist
-            let allPrintjob = yield printJob_model_1.default.getPrintJobByUser({
-                userId: userId,
-                startDate: startDate,
-                endDate: endDate,
-                PageNum: 0,
-                itemPerPage: 10
-            });
+            else {
+                allPrintjob = yield printJob_model_1.default.getPrintJobByDuration({
+                    startDate: startDate,
+                    endDate: endDate,
+                    PageNum: 0,
+                    itemPerPage: 10
+                });
+            }
             let total_page = 0;
+            let mp = new Map();
             for (let i in allPrintjob) {
                 let printJob = allPrintjob[i];
                 if (printJob.status != "success")
                     continue;
                 if (printJob.papersize != paperSize && paperSize != null)
                     continue;
-                total_page += Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+                let page_cnt = Math.ceil(printJob.numpage / (printJob.numside * printJob.pagepersheet)) * printJob.numcopy;
+                total_page += page_cnt;
+                let month = (new Date(printJob.starttime)).toISOString().slice(0, 7);
+                let cr = mp.get(month);
+                mp.set(month, (cr ? cr : 0) + page_cnt);
             }
-            return total_page;
+            if (!byMonth)
+                return total_page;
+            else {
+                let result = [];
+                for (let key of mp.keys()) {
+                    result.push({
+                        month: key,
+                        totalPage: mp.get(key)
+                    });
+                }
+                return result;
+            }
         });
     }
     static CalculateTotalUser(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate }) {
-            if (startDate != null && endDate != null) {
-                let checkStartDate = isNaN(Date.parse(startDate));
-                let checkEndDate = isNaN(Date.parse(endDate));
-                if (checkStartDate || checkEndDate)
-                    throw new errorRespone_1.BadRequestError("Date format is wrong");
-            }
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, byMonth }) {
+            this.checkDate({ startDate: startDate, endDate: endDate });
             let allPrintjob = yield printJob_model_1.default.getPrintJobByDuration({
                 startDate: startDate,
                 endDate: endDate,
                 PageNum: 0,
                 itemPerPage: 100
             });
-            let user = new Set();
-            for (let i in allPrintjob)
-                user.add(allPrintjob[i].userid);
-            return user.size;
+            if (byMonth) {
+                let res = [];
+                let prv_month = 'none';
+                let user = new Set();
+                for (let i in allPrintjob) {
+                    let month = (new Date(allPrintjob[i].starttime)).toISOString().slice(0, 7);
+                    if (prv_month != month && prv_month != 'none') {
+                        res.push({ month: prv_month, totalUser: user.size });
+                        user = new Set();
+                    }
+                    prv_month = month;
+                    user.add(allPrintjob[i].userid);
+                }
+                res.push({ month: prv_month, totalUser: user.size });
+                return res;
+            }
+            else {
+                let user = new Set();
+                for (let i in allPrintjob)
+                    user.add(allPrintjob[i].userid);
+                return user.size;
+            }
+        });
+    }
+    static totalFilebyType(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, types }) {
+            this.checkDate({ startDate: startDate, endDate: endDate });
+            const type_list = types.split(",");
+            let mp = new Map();
+            for (let i in type_list)
+                mp.set(type_list[i], 0);
+            let allPrintjob = yield printJob_model_1.default.getPrintJobType({
+                startDate: startDate,
+                endDate: endDate,
+            });
+            for (let i in allPrintjob) {
+                for (let j in type_list) {
+                    let file_type = allPrintjob[i].type;
+                    if (file_type.includes(type_list[j])) {
+                        let cr = mp.get(type_list[j]);
+                        mp.set(type_list[j], (cr ? cr : 0) + 1);
+                    }
+                }
+            }
+            let res = [];
+            for (let i in type_list)
+                res.push({ type: type_list[i], totalFile: mp.get(type_list[i]) });
+            return res;
+        });
+    }
+    static printerUsageFrequency(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ printerId, startDate, endDate }) {
+            this.checkDate({ startDate: startDate, endDate: endDate });
+            let allPrintjob = yield printJob_model_1.default.getPrintJobByPrinter({
+                printerId: printerId,
+                startDate: startDate,
+                endDate: endDate,
+                PageNum: 0,
+                itemPerPage: 100
+            });
+            let mp = new Map();
+            for (let i in allPrintjob) {
+                let printJob = allPrintjob[i];
+                if (printJob.status != "success")
+                    continue;
+                let day = (new Date(printJob.starttime)).toISOString().slice(0, 10);
+                let cr = mp.get(day);
+                mp.set(day, (cr ? cr : 0) + 1);
+            }
+            let result = [];
+            for (let key of mp.keys()) {
+                result.push({
+                    date: key,
+                    usageCount: mp.get(key)
+                });
+            }
+            return result;
+        });
+    }
+    static getFilePrintRequestFrequency(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate }) {
+            this.checkDate({ startDate: startDate, endDate: endDate });
+            let allPrintjob = yield printJob_model_1.default.getPrintJobByDuration({
+                startDate: startDate,
+                endDate: endDate,
+                PageNum: 0,
+                itemPerPage: 100
+            });
+            let mp = new Map();
+            for (let i in allPrintjob) {
+                let day = (new Date(allPrintjob[i].starttime)).toISOString().slice(0, 10);
+                let cr = mp.get(day);
+                mp.set(day, (cr ? cr : 0) + 1);
+            }
+            let result = [];
+            for (let key of mp.keys()) {
+                result.push({
+                    date: key,
+                    filePrintRequests: mp.get(key)
+                });
+            }
+            return result;
         });
     }
 }
