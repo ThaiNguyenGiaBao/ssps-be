@@ -18,10 +18,7 @@ const printer_service_1 = __importDefault(require("../services/printer.service")
 class PrinterController {
     static getPrinterByID(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const page = parseInt(req.query.page, 10) || 1; // Default to page 1
-            const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
-            const offset = (page - 1) * limit;
-            const result = yield printer_service_1.default.getPrinterByID(req.params.id, { offset, limit });
+            const result = yield printer_service_1.default.getPrinterByID(req.params.id);
             return new successResponse_1.OK({
                 data: result,
                 message: "Get printer successfully"
@@ -36,8 +33,7 @@ class PrinterController {
             const result = yield printer_service_1.default.getAllPrinter({ offset, limit });
             return new successResponse_1.OK({
                 data: result,
-                message: result.length === 0 ? "No printer found" :
-                    "Get all printers successfully"
+                message: "Get all printers successfully"
             }).send(res);
         });
     }

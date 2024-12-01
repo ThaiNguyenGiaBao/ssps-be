@@ -69,5 +69,4 @@ class LocationService {
         });
     }
 }
-;
 exports.default = LocationService;

@@ -19,7 +19,18 @@ class PaymentModel {
             const result = yield initDatabase_1.default.query(`
       SELECT * FROM PAYMENT
       LIMIT $1 OFFSET $2;`, [limit, offset]);
-            return result.rows;
+            const countQuery = yield initDatabase_1.default.query(`SELECT COUNT(*) AS total FROM payment;`);
+            const totalItems = countQuery.rows[0].total;
+            const totalPages = Math.ceil(totalItems / limit);
+            return {
+                data: result.rows,
+                meta: {
+                    totalPages,
+                    totalItems,
+                    currentPage: offset / limit + 1,
+                    perPage: limit
+                }
+            };
         });
     }
     static insertPayment(user_id, amount) {
@@ -36,28 +47,60 @@ class PaymentModel {
             if (!startTime && !endTime)
                 return this.getAllPayment({ offset, limit });
             let result = null;
-            if (!endTime)
+            let countQuery = null;
+            if (!endTime) {
                 result = yield initDatabase_1.default.query(`
         SELECT * 
         FROM public.payment 
         WHERE timestamp >= $1 
-        ORDER BY timestamp;
+        ORDER BY timestamp
+        LIMIT $2 OFFSET $3;
+      `, [startTime, limit, offset]);
+                countQuery = yield initDatabase_1.default.query(`
+        SELECT COUNT(*) as total
+        FROM public.payment 
+        WHERE timestamp >= $1
       `, [startTime]);
-            else if (!startTime)
+            }
+            else if (!startTime) {
                 result = yield initDatabase_1.default.query(`
         SELECT * 
         FROM public.payment 
         WHERE timestamp <= $1 
-        ORDER BY timestamp;
+        ORDER BY timestamp
+        LIMIT $2 OFFSET $3;
+      `, [endTime, limit, offset]);
+                countQuery = yield initDatabase_1.default.query(`
+        SELECT COUNT(*) as total
+        FROM public.payment 
+        WHERE timestamp <= $1 
       `, [endTime]);
-            else
+            }
+            else {
                 result = yield initDatabase_1.default.query(`
         SELECT * 
         FROM payment 
         WHERE timestamp BETWEEN $1 AND $2 
-        ORDER BY timestamp;
+        ORDER BY timestamp
+        LIMIT $3 OFFSET $4;
+      `, [startTime, endTime, limit, offset]);
+                countQuery = yield initDatabase_1.default.query(`
+        SELECT COUNT(*) as total
+        FROM payment 
+        WHERE timestamp BETWEEN $1 AND $2;
       `, [startTime, endTime]);
-            return result.rows;
+            }
+            const totalItems = countQuery.rows[0].total;
+            const totalPages = Math.ceil(totalItems / limit);
+            return {
+                data: result.rows,
+                meta: {
+                    totalPages,
+                    totalItems,
+                    currentPage: offset / limit + 1,
+                    perPage: limit
+                }
+            };
         });
     }
     static getPaymentByUserID(user_id_1, _a) {
@@ -67,7 +110,22 @@ class PaymentModel {
       FROM PAYMENT 
       WHERE user_id=$1
       LIMIT $2 OFFSET $3;`, [user_id, limit, offset]);
-            return result.rows;
+            const countQuery = yield initDatabase_1.default.query(`
+        SELECT COUNT(*) AS total 
+        FROM payment 
+        WHERE user_id=$1;
+      `, [user_id]);
+            const totalItems = countQuery.rows[0].total;
+            const totalPages = Math.ceil(totalItems / limit);
+            return {
+                data: result.rows,
+                meta: {
+                    totalPages,
+                    totalItems,
+                    currentPage: offset / limit + 1,
+                    perPage: limit
+                }
+            };
         });
     }
 }

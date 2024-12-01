@@ -20,15 +20,25 @@ class PrinterModel {
             const result = yield initDatabase_1.default.query(`
       SELECT * FROM PRINTER
       LIMIT $1 OFFSET $2;`, [limit, offset]);
-            return result.rows;
+            const countQuery = yield initDatabase_1.default.query(`SELECT COUNT(*) AS total FROM printer`);
+            const totalItems = countQuery.rows[0].total;
+            const totalPages = Math.ceil(totalItems / limit);
+            return {
+                data: result.rows,
+                meta: {
+                    totalPages,
+                    totalItems,
+                    currentPage: offset / limit + 1,
+                    perPage: limit
+                }
+            };
         });
     }
-    static findPrinterByID(printerID_1, _a) {
-        return __awaiter(this, arguments, void 0, function* (printerID, { offset, limit }) {
+    static findPrinterByID(printerID) {
+        return __awaiter(this, void 0, void 0, function* () {
             const result = yield initDatabase_1.default.query(`
       SELECT * FROM PRINTER 
-      WHERE ID=$1
-      LIMIT $2 OFFSET $3;`, [printerID, limit, offset]);
+      WHERE ID=$1;`, [printerID]);
             return result.rows[0] || null;
         });
     }
@@ -49,7 +59,7 @@ class PrinterModel {
             if (fields.length === 0) {
                 throw new errorRespone_1.BadRequestError("No fields provided to update");
             }
-            const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+            const setClauses = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
             const result = yield initDatabase_1.default.query(`
       UPDATE PRINTER
       SET ${setClauses}

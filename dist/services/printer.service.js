@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const errorRespone_1 = require("../helper/errorRespone");
 const printer_model_1 = __importDefault(require("../model/printer.model"));
+const utils_1 = require("../utils");
 class PrinterService {
     static getAllPrinter(_a) {
         return __awaiter(this, arguments, void 0, function* ({ offset, limit }) {
@@ -21,12 +22,12 @@ class PrinterService {
             return result;
         });
     }
-    static getPrinterByID(printerID_1, _a) {
-        return __awaiter(this, arguments, void 0, function* (printerID, { offset, limit }) {
+    static getPrinterByID(printerID) {
+        return __awaiter(this, void 0, void 0, function* () {
             if (!printerID) {
                 throw new errorRespone_1.BadRequestError("Printer ID is required.");
             }
-            const result = yield printer_model_1.default.findPrinterByID(printerID, { offset, limit });
+            const result = yield printer_model_1.default.findPrinterByID(printerID);
             if (result === null)
                 throw new errorRespone_1.NotFoundError("Cannot find the printer with ID " + printerID);
             return result;
@@ -44,6 +45,9 @@ class PrinterService {
             // Check for invalid type
             if (printer.status !== "enabled" && printer.status !== "disabled")
                 throw new errorRespone_1.BadRequestError("Printer status must be 'enabled' or 'disabled'");
+            if (printer.locationId && (0, utils_1.checkUUID)(printer.locationId)) {
+                throw new errorRespone_1.BadRequestError("Location ID must be type uuid.");
+            }
             const result = yield printer_model_1.default.createPrinter(printer);
             if (result === null)
                 throw new errorRespone_1.InternalServerError("Cannot create the printer");
@@ -65,7 +69,7 @@ class PrinterService {
             if (!printerID)
                 throw new errorRespone_1.BadRequestError("Printer ID is required.");
             const values = Object.values(data);
-            values.forEach(value => {
+            values.forEach((value) => {
                 if (!value)
                     throw new errorRespone_1.BadRequestError("Updated value cannot be null | undefined!");
             });
