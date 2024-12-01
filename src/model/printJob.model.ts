@@ -3,11 +3,7 @@ import { BadRequestError, NotFoundError } from "../helper/errorRespone";
 
 class PrintingJobModel {
     static async getPrintJob(printJobId: string) {
-        const printJob = await db.query(
-            "SELECT *, printingjob.id FROM printingjob  JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printingjob.id::text = '" +
-                printJobId +
-                "'"
-        );
+        const printJob = await db.query("SELECT * FROM printingjob WHERE id::text = '" + printJobId + "'");
         if (printJob.rows.length == 0) throw new NotFoundError("Can not find this printjob!");
         return printJob.rows[0];
     }
@@ -50,10 +46,7 @@ class PrintingJobModel {
         PageNum: number;
         itemPerPage: number;
     }) {
-        let query_string =
-            "SELECT *,printingjob.id  FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid WHERE printerid::text = '" +
-            printerId +
-            "' ";
+        let query_string = "SELECT * FROM printingjob WHERE printerid::text = '" + printerId + "' ";
         if (startDate != null) query_string += " AND starttime >= '" + startDate + "' ";
         if (endDate != null) query_string += " AND starttime <= '" + endDate + "' ";
 
@@ -80,12 +73,7 @@ class PrintingJobModel {
         PageNum: number;
         itemPerPage: number;
     }) {
-        let query_string =
-            "SELECT *,printingjob.id  FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid  WHERE userid::text = '" +
-            userId +
-            "' AND printerid::text = '" +
-            printerId +
-            "' ";
+        let query_string = "SELECT * FROM printingjob WHERE userid::text = '" + userId + "' AND printerid::text = '" + printerId + "' ";
         if (startDate != null) query_string += " AND starttime >= '" + startDate + "' ";
         if (endDate != null) query_string += " AND starttime <= '" + endDate + "' ";
 
@@ -108,7 +96,7 @@ class PrintingJobModel {
         PageNum: number;
         itemPerPage: number;
     }) {
-        let query_string = "SELECT * FROM printingjob JOIN users u on u.id = userId JOIN printer p on p.id = printerid";
+        let query_string = "SELECT * FROM printingjob";
         if (startDate != null) {
             query_string += " WHERE starttime >= '" + startDate + "' ";
             if (endDate != null) query_string += " AND starttime <= '" + endDate + "' ";

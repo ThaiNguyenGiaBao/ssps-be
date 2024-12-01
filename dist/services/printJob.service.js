@@ -198,6 +198,7 @@ class PrintingJobService {
                 });
             }
             else {
+                console.log("here");
                 allPrintjob = yield printJob_model_1.default.getPrintJobByDuration({
                     startDate: startDate,
                     endDate: endDate,
