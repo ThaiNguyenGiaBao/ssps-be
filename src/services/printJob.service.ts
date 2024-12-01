@@ -245,6 +245,7 @@ class PrintingJobService {
                 itemPerPage: 10
             });
         } else {
+            console.log("here");
             allPrintjob = await PrintJobModel.getPrintJobByDuration({
                 startDate: startDate,
                 endDate: endDate,
