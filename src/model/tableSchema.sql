@@ -31,6 +31,7 @@ CREATE TABLE file (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     userId UUID REFERENCES users(id),
     fileName VARCHAR(255) NOT NULL,
+    isDeleted BOOLEAN DEFAULT false,
     url TEXT NOT NULL,
     type VARCHAR(50) NOT NULL
 );

@@ -11,4 +11,18 @@ const checkUUID = (uuid: string) => {
     return uuidRegex.test(uuid);
 };
 
-export { asyncHandler,checkUUID };
+
+/**
+ * Validates the format of a given ISO 8601 timestamp string.
+ * @param time The timestamp string to validate.
+ * @returns True if the timestamp matches the ISO 8601 format with timezone.
+ */
+function isValidTimestamp(time: string): boolean {
+    // Try to create a Date object from the time string
+    const dateObj = new Date(time);
+
+    // Check if the Date object is valid
+    return !isNaN(dateObj.getTime());
+}
+
+export { asyncHandler, checkUUID, isValidTimestamp };

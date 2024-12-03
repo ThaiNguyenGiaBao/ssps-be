@@ -34,7 +34,7 @@ class PrintingJobModel {
         query_string += "ORDER BY printingjob.starttime DESC ";
         // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
         //     query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
-        
+
         const allPrintJob = await db.query(query_string);
         return allPrintJob.rows;
     }
@@ -55,7 +55,7 @@ class PrintingJobModel {
         if(endDate != null) query_string += " AND starttime <= '"+ endDate + "' ";
 
         query_string += "ORDER BY starttime DESC ";
-        // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+        // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0)
         //     query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
 
         const allPrintJob = await db.query(query_string);
@@ -78,7 +78,7 @@ class PrintingJobModel {
         if(endDate != null) query_string += " AND starttime <= '"+ endDate + "' ";
 
         query_string += "ORDER BY starttime DESC ";
-        // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+        // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0)
         //     query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
 
         const allPrintJob = await db.query(query_string);
@@ -103,23 +103,22 @@ class PrintingJobModel {
         query_string += "ORDER BY printingjob.starttime DESC ";
         // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
         //     query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
-        
+
         const allPrintJob = await db.query(query_string);
         return allPrintJob.rows;
     }
 
-    static async getPrintJobType({startDate, endDate}: {startDate: string, endDate: string}) {
+    static async getPrintJobType({ startDate, endDate }: { startDate: string; endDate: string }) {
         let query_string = "SELECT DISTINCT file.id, type FROM file INNER JOIN printingjob ON file.id = printingjob.fileid ";
-        if(startDate != null) {
-            query_string += " WHERE starttime >= '"+ startDate + "' ";
-            if(endDate != null) query_string += " AND starttime <= '"+ endDate + "' ";
-        }
-        else if(endDate != null) query_string += " WHERE starttime <= '"+ endDate + "' ";
+        if (startDate != null) {
+            query_string += " WHERE starttime >= '" + startDate + "' ";
+            if (endDate != null) query_string += " AND starttime <= '" + endDate + "' ";
+        } else if (endDate != null) query_string += " WHERE starttime <= '" + endDate + "' ";
 
         // query_string += "ORDER BY starttime DESC ";
-        // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0) 
+        // if(Number.isInteger(PageNum) && PageNum > 0 && Number.isInteger(itemPerPage) && itemPerPage > 0)
         //     query_string += "LIMIT " + itemPerPage.toString() + " OFFSET " + (itemPerPage * (PageNum - 1)).toString();
-        
+
         const allPrintJob = await db.query(query_string);
         return allPrintJob.rows;
     }
@@ -133,4 +132,4 @@ class PrintingJobModel {
     }
 }
 
-export default PrintingJobModel
+export default PrintingJobModel;

@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const successResponse_1 = require("../helper/successResponse");
+const errorRespone_1 = require("../helper/errorRespone");
 const printer_service_1 = __importDefault(require("../services/printer.service"));
 class PrinterController {
     static getPrinterByID(req, res) {
@@ -26,16 +27,20 @@ class PrinterController {
     }
     static getAllPrinter(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield printer_service_1.default.getAllPrinter();
+            const page = parseInt(req.query.page, 10) || 1; // Default to page 1
+            const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
+            const offset = (page - 1) * limit;
+            const result = yield printer_service_1.default.getAllPrinter({ offset, limit });
             return new successResponse_1.OK({
                 data: result,
-                message: result.length === 0 ? "No printer found" :
-                    "Get all printers successfully"
+                message: "Get all printers successfully"
             }).send(res);
         });
     }
     static addPrinter(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (req.user.role != "admin")
+                throw new errorRespone_1.ForbiddenError("Only admin can add a printer.");
             const printer = {
                 id: "dummy",
                 brand: req.body.brand,
@@ -53,6 +58,8 @@ class PrinterController {
     }
     static removePrinter(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (req.user.role != "admin")
+                throw new errorRespone_1.ForbiddenError("Only admin can remove a printer.");
             const result = yield printer_service_1.default.removePrinter(req.params.id);
             return new successResponse_1.OK({
                 message: "Delete successfully",
@@ -62,6 +69,8 @@ class PrinterController {
     }
     static updatePrinter(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (req.user.role != "admin")
+                throw new errorRespone_1.ForbiddenError("Only admin can update a printer.");
             const result = yield printer_service_1.default.updatePrinter(req.params.id, req.body);
             return new successResponse_1.OK({
                 message: "Update successfully",

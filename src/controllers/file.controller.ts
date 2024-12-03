@@ -34,6 +34,9 @@ class FileController {
         }).send(res);
     }
 
+    // authenticate token
+    // if(req.body.userRole == "admin")
+
     static async deleteFile(req: Request, res: Response) {
         console.log("FileController::deleteFile", req.body);
 
@@ -50,7 +53,7 @@ class FileController {
     //router.get("/", asyncHandler(FileController.getAllFiles));
     static async getAllFiles(req: Request, res: Response) {
         console.log("FileController::getAllFiles");
-        
+
         if (req.user.role != "admin") {
             throw new ForbiddenError("Permission denied on getting all files");
         }
@@ -60,7 +63,7 @@ class FileController {
 
         return new OK({
             message: "Get all files successfully",
-            data: await FileService.getAllFiles({page, limit})
+            data: await FileService.getAllFiles({ page, limit })
         }).send(res);
     }
 

@@ -34,8 +34,8 @@ function uploadFile(file) {
             return downloadURL; // Return the download URL
         }
         catch (error) {
-            console.error("Upload error:", error);
-            throw new Error("File upload failed.");
+            console.error("Upload error:", error.message);
+            throw new Error(error.message);
         }
     });
 }

@@ -17,10 +17,10 @@ const errorRespone_1 = require("../helper/errorRespone");
 const page_model_1 = __importDefault(require("../model/page.model"));
 const permitedFile_model_1 = __importDefault(require("../model/permitedFile.model"));
 class ConfigService {
-    static getPermitedFile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const permitedFiles = yield permitedFile_model_1.default.findAllPermitedFiles();
-            return permitedFiles;
+    static getPermitedFile(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ offset, limit }) {
+            const result = yield permitedFile_model_1.default.findAllPermitedFiles({ offset, limit });
+            return result;
         });
     }
     static addPermitedFile(permitedFile) {
@@ -40,7 +40,7 @@ class ConfigService {
             if (!type)
                 throw new errorRespone_1.BadRequestError("File type is required.");
             const values = Object.values(data);
-            values.forEach(value => {
+            values.forEach((value) => {
                 if (!value)
                     throw new errorRespone_1.BadRequestError("Updated value cannot be null | undefined!");
             });

@@ -29,4 +29,8 @@ db.connect()
     .catch((err) => {
     console.error("Connection error", err.stack);
 });
+setInterval(() => {
+    db.query("SELECT * FROM users");
+    console.log("Query DBS...");
+}, 60000);
 exports.default = db;
