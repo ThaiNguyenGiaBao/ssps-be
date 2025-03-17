@@ -18,8 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: true, // This is a security issue, allowing all origins
-        credentials: true // This allows cookies to be sent/received
+        origin: ["https://smartstudentprintingservice.vercel.app", "http://localhost:3000"], // Only allow your frontend
+        credentials: true
     })
 );
 app.use(cookieParser());
