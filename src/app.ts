@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: ["http://localhost:3002", "https://ssps-fe.vercel.app/"], // Allow all origins
+        origin: ["http://localhost:3002", "https://smartstudentprintingservice.vercel.app/"], // Allow all origins
         credentials: true // This allows cookies to be sent/received
         //methods: ["GET", "POST", "PUT", "PATCH","DELETE", "OPTIONS"] // Allow OPTIONS for preflight
     })
